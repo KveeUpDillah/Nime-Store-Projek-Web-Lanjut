@@ -1,0 +1,113 @@
+{% extends 'index.html' %}
+
+{% block content %}
+<style>
+  .contact-hero {
+    position: relative;
+    height: 280px;
+    background-image: url('https://images.unsplash.com/photo-1574158622682-e40e69881006?auto=format&fit=crop&w=1600&q=80');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .contact-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.15);
+  }
+
+  .contact-hero-text {
+    position: relative;
+    z-index: 1;
+    color: #fff;
+  }
+
+  .contact-hero-text h1 {
+    font-weight: 900;
+    font-size: 3rem;
+    color: #29b6e8;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    margin-bottom: 0.25rem;
+  }
+
+  .contact-hero-text p {
+    font-weight: 500;
+    font-size: 1.1rem;
+    margin: 0;
+  }
+
+  .contact-info {
+    padding: 2.5rem 0 1.5rem;
+  }
+
+  .contact-info h6 {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+  }
+
+  .contact-info p {
+    color: var(--brand-gray);
+    margin: 0;
+  }
+
+  .contact-extra {
+    padding: 1.5rem 0 3rem;
+  }
+
+  .contact-extra h6 {
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+  }
+
+  .contact-extra p {
+    color: #999999;
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+</style>
+
+<div class="contact-hero">
+  <div class="contact-hero-text">
+    <h1>Contact Us</h1>
+    <p>We would love to hear you :3</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row contact-info">
+    <div class="col-md-4 mb-3">
+      <h6>EMAIL</h6>
+      <p>sixseven@gmai.com</p>
+    </div>
+    <div class="col-md-4 mb-3 text-md-center">
+      <h6>Jam Operasional</h6>
+      <p>07.00 - 16.00 WITA</p>
+    </div>
+    <div class="col-md-4 mb-3 text-md-end">
+      <h6>Layanan Operasi</h6>
+      <p>0898675467</p>
+    </div>
+  </div>
+
+  <div class="row contact-extra">
+    <div class="col-md-4 mb-4">
+      <h6>Here text</h6>
+      <p>Writing for websites is both simple and complex. On the one hand, all you need to do is say what you mean and in your words.</p>
+    </div>
+    <div class="col-md-4 mb-4">
+      <h6>There text</h6>
+      <p>Are you thinking of keywords you should rank for? Are you including links in your text to additional information?</p>
+    </div>
+    <div class="col-md-4 mb-4">
+      <h6>Everywhere text</h6>
+      <p>There's a theory that people read in an F-shaped pattern, and that this should influence how you structure content on your website.</p>
+    </div>
+  </div>
+</div>
+{% endblock content %}
