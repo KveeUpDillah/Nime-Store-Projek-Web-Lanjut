@@ -1,0 +1,53 @@
+{% extends 'layouts/index.html' %}
+{% block content %}
+
+<section class="container py-5">
+  <h1 class="fw-bold mb-4">Keranjang Saya</h1>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle">
+      <thead>
+        <tr>
+          <th>Produk</th>
+          <th>Harga</th>
+          <th>Jumlah</th>
+          <th>Subtotal</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for item in cart.items.all %}
+          <tr>
+            <td>{{ item.product.name }}</td>
+            <td>Rp {{ item.product.price }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>Rp {{ item.subtotal }}</td>
+            <td>
+              <form method="POST" action="{% url 'remove_from_cart' item.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-danger">
+                  Hapus
+                </button>
+              </form>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5" class="text-center">
+              Keranjang masih kosong.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% endblock content %}

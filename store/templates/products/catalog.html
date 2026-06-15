@@ -1,0 +1,77 @@
+{% extends 'layouts/index.html' %}
+{% block content %}
+
+<section class="container py-5">
+  <h1 class="fw-bold mb-4">Catalog Produk</h1>
+
+  <form method="GET" action="{% url 'catalog' %}" class="mb-4">
+  <div class="row g-2">
+
+    <div class="col-md-6">
+      <input type="text"
+             name="q"
+             class="form-control"
+             placeholder="Cari produk, kategori, anime, atau nama toko..."
+             value="{{ query }}">
+    </div>
+
+    <div class="col-md-4">
+      <select name="anime" class="form-control">
+        <option value="">Semua Anime</option>
+
+        {% for anime in anime_list %}
+          <option value="{{ anime.id }}"
+            {% if anime_id == anime.id|stringformat:"s" %}selected{% endif %}>
+            {{ anime.title }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-dark w-100">
+        Filter
+      </button>
+    </div>
+
+  </div>
+</form>
+{% if query or anime_id %}
+  <a href="{% url 'catalog' %}" class="btn btn-outline-secondary mb-4">
+    Reset Filter
+  </a>
+{% endif %}
+
+  <div class="row">
+    {% for product in products %}
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+
+          {% if product.image %}
+            <img src="{{ product.image.url }}" class="card-img-top" style="height:250px; object-fit:cover;">
+          {% endif %}
+
+          <div class="card-body">
+            <h5 class="fw-bold">{{ product.name }}</h5>
+            <p class="text-muted">{{ product.description|truncatewords:15 }}</p>
+            {% if product.anime %}
+            <p class="text-muted mb-1">
+              Anime: {{ product.anime.title }}
+            </p>
+          {% endif %}
+            <p class="fw-bold">Rp {{ product.price }}</p>
+            <p>Stok: {{ product.stock }}</p>
+
+            <a href="{% url 'product_detail' product.id %}" class="btn btn-dark">
+              Lihat Detail
+            </a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p>Belum ada produk yang tersedia.</p>
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock content %}

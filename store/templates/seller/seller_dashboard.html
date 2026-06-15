@@ -1,0 +1,71 @@
+{% extends 'layouts/index.html' %}
+{% block content %}
+
+<section class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="fw-bold">Dashboard Seller</h1>
+      <p class="text-muted">Toko: {{ seller.shop_name }}</p>
+    </div>
+
+    <a href="{% url 'product_create' %}" class="btn btn-dark">
+      + Tambah Produk
+    </a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle">
+      <thead>
+        <tr>
+          <th>Produk</th>
+          <th>Kategori</th>
+          <th>Harga</th>
+          <th>Stok</th>
+          <th>Status</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for product in products %}
+          <tr>
+            <td>{{ product.name }}</td>
+            <td>{{ product.category|default:"-" }}</td>
+            <td>Rp {{ product.price }}</td>
+            <td>{{ product.stock }}</td>
+            <td>
+              {% if product.is_active %}
+                Aktif
+              {% else %}
+                Nonaktif
+              {% endif %}
+            </td>
+            <td>
+              <a href="{% url 'product_update' product.id %}" class="btn btn-sm btn-warning">
+                Edit
+              </a>
+
+              <a href="{% url 'product_delete' product.id %}" class="btn btn-sm btn-danger">
+                Hapus
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" class="text-center">
+              Belum ada produk.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% endblock content %}
