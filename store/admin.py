@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, Order, OrderItem, Review, SellerProfile, ProductReview, Cart, CartItem, Anime
+from .models import Category, Product, Order, OrderItem, Review, SellerProfile, ProductReview, Cart, CartItem, Anime, Payment, Checkout
 
 admin.site.register(Order)
 admin.site.register(OrderItem)
@@ -39,3 +39,17 @@ class ProductReviewAdmin(admin.ModelAdmin):
 class AnimeAdmin(admin.ModelAdmin):
     list_display = ('title', 'mal_id')
     search_fields = ('title',)
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ('reference_id', 'amount', 'status', 'paid_at', 'expired_at', 'created_at')
+    list_filter = ('status',)
+    search_fields = ('reference_id',)
+    readonly_fields = ('reference_id', 'created_at', 'updated_at')
+
+@admin.register(Checkout)
+class CheckoutAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'status', 'recipient_name', 'city', 'created_at')
+    list_filter = ('status',)
+    search_fields = ('user__username', 'recipient_name', 'phone_number')
+    readonly_fields = ('created_at', 'updated_at')

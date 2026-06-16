@@ -1,13 +1,16 @@
 import requests
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
+from store.decorators import moderator_required, seller_required, customer_required
+from store.permission import is_moderator
 from store.models import Product
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.models import User
 from .models import Review, SellerProfile, Product, ProductReview, Cart, CartItem, UserProfile, Anime
 from .forms import ReviewForm, SellerProfileForm, ProductForm, ProductReviewForm, UserProfileForm, SellerProfileEditForm
 from django.contrib import messages
 from django.db.models import Q
+from django.contrib.auth.models import Group
+from django.http import JsonResponse
 
 def index(request):
     products = Product.objects.all()
@@ -63,48 +66,17 @@ def about(request):
 def login(request):
     return render(request, 'accounts/login.html')
 
-def register(request):
-    if request.method == "POST":
-        username = request.POST.get("username")
-        email = request.POST.get("email")
-        password1 = request.POST.get("password1")
-        password2 = request.POST.get("password2")
-
-        if password1 != password2:
-            return render(request, "accounts/register.html", {
-                "pesan": "Password dan konfirmasi password tidak sama."
-            })
-
-        if User.objects.filter(username=username).exists():
-            return render(request, "accounts/register.html", {
-                "pesan": "Username sudah digunakan."
-            })
-
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password1
-        )
-
-        user.save()
-
-        return redirect("login")
-
-    return render(request, "accounts/register.html")
-
 # Dashboard view, hanya bisa diakses admin
-def is_admin(user):
-    return user.groups.filter(name='Moderator').exists()
-
+@moderator_required
 @login_required
-@user_passes_test(is_admin)
+@user_passes_test(is_moderator)
 def dashboard(request):
     return render(request, 'admin/dashboard.html')
 
 def is_seller(user):
     return hasattr(user, 'seller_profile')
 
-
+@customer_required
 @login_required
 def become_seller(request):
     if is_seller(request.user):
@@ -117,6 +89,9 @@ def become_seller(request):
             seller = form.save(commit=False)
             seller.user = request.user
             seller.save()
+            seller_group = Group.objects.get(name='Seller')
+            request.user.groups.add(seller_group)
+
 
             messages.success(request, 'Akun seller berhasil dibuat.')
             return redirect('seller_dashboard')
@@ -126,7 +101,6 @@ def become_seller(request):
     return render(request, 'seller/become_seller.html', {
         'form': form
     })
-
 
 @login_required
 def seller_dashboard(request):
@@ -142,6 +116,7 @@ def seller_dashboard(request):
         'products': products
     })
 
+@seller_required
 @login_required
 def product_create(request):
     if not is_seller(request.user):
@@ -157,6 +132,9 @@ def product_create(request):
 
             messages.success(request, 'Produk berhasil ditambahkan.')
             return redirect('seller_dashboard')
+        else:
+            print(form.errors)  # <-- taruh di sini
+    
     else:
         form = ProductForm()
 
@@ -165,7 +143,7 @@ def product_create(request):
         'title': 'Tambah Produk'
     })
 
-
+@seller_required
 @login_required
 def product_update(request, product_id):
     product = get_object_or_404(
@@ -189,7 +167,7 @@ def product_update(request, product_id):
         'title': 'Edit Produk'
     })
 
-
+@seller_required
 @login_required
 def product_delete(request, product_id):
     product = get_object_or_404(
@@ -289,35 +267,110 @@ def cart_view(request):
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id, is_active=True)
 
+    # Cek jika stok awal produk kosong
     if product.stock <= 0:
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'error', 'pesan': 'Stok produk habis.'})
         messages.error(request, 'Stok produk habis.')
         return redirect('product_detail', product_id=product.id)
 
     cart, created = Cart.objects.get_or_create(user=request.user)
-
-    item, created = CartItem.objects.get_or_create(
-        cart=cart,
-        product=product
-    )
+    item, created = CartItem.objects.get_or_create(cart=cart, product=product)
 
     if not created:
-        item.quantity += 1
-        item.save()
+        # Jika barang sudah ada di keranjang, naikkan jumlahnya
+        if item.quantity < product.stock:
+            item.quantity += 1
+            item.save()
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'status': 'error', 
+                    'pesan': 'Gagal menambahkan! Jumlah di keranjang sudah mencapai batas stok.'
+                })
+            messages.error(request, 'Jumlah di keranjang sudah mencapai batas stok.')
+            return redirect('cart/cart')
+    else:
+        # Jika item baru pertama kali dibuat di DB, quantity otomatis 1 (bawaan default=1)
+        pass
 
+    # --- KUNCI NYATA AJAX DI SINI ---
+    # Jika request dari JavaScript, langsung potong di sini dan kirim JSON (Jangan biarkan kena fungsi messages Django)
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'status': 'success',
+            'pesan': f'{product.name} berhasil ditambahkan ke keranjang!'
+        })
+
+    # Ini hanya berjalan kalau diakses biasa tanpa AJAX (Fallback)
     messages.success(request, 'Produk berhasil ditambahkan ke keranjang.')
     return redirect('cart/cart')
 
+@login_required
+def update_cart_item(request, item_id):
+    cart_item = get_object_or_404(CartItem, pk=item_id)
+    product = cart_item.product
+    
+    aksi = request.GET.get('aksi')
+    
+    if aksi == 'tambah':
+        if cart_item.quantity < product.stock:
+            cart_item.quantity += 1
+            cart_item.save()
+    elif aksi == 'kurang':
+        if cart_item.quantity > 1:
+            cart_item.quantity -= 1
+            cart_item.save()
+        else:
+            cart_item.delete()
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'success', 'jumlah_baru': 0})
+            return redirect('cart/cart')
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'status': 'success',
+            'jumlah_baru': cart_item.quantity,
+            'subtotal_baru': cart_item.formatted_subtotal,
+        })
+
+    return redirect('cart/cart')
 
 @login_required
 def remove_from_cart(request, item_id):
     cart = get_object_or_404(Cart, user=request.user)
     item = get_object_or_404(CartItem, id=item_id, cart=cart)
+    nama_produk = item.product.name # Ambil nama produk buat pesan sukses
 
     if request.method == 'POST':
+        # 1. Hapus item dari database
         item.delete()
+        
+        # 2. POTONG DI SINI JIKA REQUEST DARI JAVASCRIPT (AJAX)
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({
+                'status': 'success',
+                'pesan': f'"{nama_produk}" berhasil dihapus dari keranjang.'
+            })
+        
+        # Ini hanya berjalan jika diakses lewat form HTML biasa (tanpa AJAX)
         messages.success(request, 'Produk berhasil dihapus dari keranjang.')
 
     return redirect('cart/cart')
+
+def checkout(request):
+    cart = get_object_or_404(Cart, user=request.user)
+
+    if request.method == 'POST':
+        # Proses checkout (misalnya buat Order, kurangi stok, dll)
+        # Di sini kita hanya hapus semua item di keranjang sebagai simulasi checkout
+        cart.items.all().delete()
+        messages.success(request, 'Checkout berhasil! Terima kasih atas pembelian Anda.')
+        return redirect('catalog')
+
+    return render(request, 'cart/checkout.html', {
+        'cart': cart
+    })
 
 # Profile view
 @login_required
