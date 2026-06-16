@@ -233,9 +233,13 @@
   <div class="hero-content">
     <p class="hero-subtitle">Merchandise Anime, Game, dan Pop Culture Lainnya</p>
     <h1 class="hero-title">Belanja Kebutuhan Hiburanmu<br>bersama kami</h1>
-    <p class="hero-cta-note">Login untuk memulai berbelanja</p>
+    <p class="hero-cta-note">Kalau mau belanja, silakan login dulu!</p>
     <div>
-      <a href="{% url 'login' %}" class="btn-dark-solid">Login</a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'catalog' %}" class="btn-dark-solid">Gas Boncos</a>
+      {% else %}
+         <a href="{% url 'login' %}" class="btn-dark-solid">Login</a>
+      {% endif %}
       <a href="{% url 'about' %}" class="btn-outline-dark-soft">Pelajari Lebih Lanjut</a>
     </div>
   </div>

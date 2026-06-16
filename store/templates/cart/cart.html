@@ -24,18 +24,32 @@
 
       <tbody>
         {% for item in cart.items.all %}
-          <tr>
+          <tr id="cart-row-{{ item.id }}">
             <td>{{ item.product.name }}</td>
-            <td>Rp {{ item.product.price }}</td>
-            <td>{{ item.quantity }}</td>
-            <td>Rp {{ item.subtotal }}</td>
+            <td>Rp {{ item.product.formatted_price }}</td>
+            <td class="text-center">
+              <div class="d-flex align-items-center gap-2">
+                <button type="button" 
+                        class="btn btn-sm btn-outline-secondary py-0 px-2 btn-ubah-qty" 
+                        data-id="{{ item.id }}" 
+                        data-aksi="kurang">-</button>
+                
+                <span class="fw-bold px-1" id="qty-{{ item.id }}">{{ item.quantity }}</span>
+                
+                <button type="button" 
+                        class="btn btn-sm btn-outline-secondary py-0 px-2 btn-ubah-qty" 
+                        data-id="{{ item.id }}" 
+                        data-aksi="tambah">+</button>
+              </div>
+            </td>
+            <td id="subtotal-{{ item.id }}">Rp {{ item.formatted_subtotal }}</td>
             <td>
-              <form method="POST" action="{% url 'remove_from_cart' item.id %}">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-sm btn-danger">
-                  Hapus
-                </button>
-              </form>
+              <button type="button" 
+                      class="btn btn-sm btn-danger btn-hapus-item" 
+                      data-id="{{ item.id }}"
+                      data-nama="{{ item.product.name }}">
+                Hapus
+              </button>
             </td>
           </tr>
         {% empty %}
@@ -49,5 +63,103 @@
     </table>
   </div>
 </section>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+// === LOGIKA SCRIPT UTAMA KELOLA KERANJANG ===
+
+// 1. Logika Update Jumlah (+ / -)
+document.querySelectorAll('.btn-ubah-qty').forEach(button => {
+    button.addEventListener('click', function() {
+        const itemId = this.dataset.id;
+        const aksi = this.dataset.aksi;
+        
+        fetch(`/cart/update/${itemId}/?aksi=${aksi}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const qtyElement = document.getElementById(`qty-${itemId}`);
+                const subtotalElement = document.getElementById(`subtotal-${itemId}`);
+                
+                if (data.jumlah_baru === 0) {
+                    location.reload();
+                } else {
+                    if (qtyElement) qtyElement.innerText = data.jumlah_baru;
+                    if (subtotalElement) subtotalElement.innerText = 'Rp ' + data.subtotal_baru;
+                }
+            } else {
+                alert('Gagal mengubah jumlah barang');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+});
+
+// 2. Logika Tombol Hapus (AJAX + SweetAlert2)
+document.querySelectorAll('.btn-hapus-item').forEach(button => {
+    button.addEventListener('click', function() {
+        const itemId = this.dataset.id;
+        const namaProduk = this.dataset.nama;
+        
+        Swal.fire({
+            title: 'Apakah kamu yakin?',
+            text: `Menghapus "${namaProduk}" dari keranjang?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`{% url 'remove_from_cart' 0 %}`.replace('0', itemId), {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Terhapus!',
+                            text: data.pesan,
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                        
+                        // Efek animasi memudar saat baris menghilang
+                        const barisTabel = document.getElementById(`cart-row-${itemId}`);
+                        if (barisTabel) {
+                            barisTabel.style.transition = 'all 0.5s ease';
+                            barisTabel.style.opacity = '0';
+                            setTimeout(() => {
+                                barisTabel.remove();
+                                
+                                // Jika barang di tabel habis total, reload biar muncul teks "Keranjang kosong"
+                                const sisaBaris = document.querySelectorAll('tbody tr');
+                                if (sisaBaris.length === 0 || (sisaBaris.length === 1 && sisaBaris[0].querySelector('td[colspan]'))) {
+                                    location.reload();
+                                }
+                            }, 500);
+                        }
+                    } else {
+                        Swal.fire('Gagal!', 'Terjadi kesalahan.', 'error');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        });
+    });
+});
+</script>
 
 {% endblock content %}

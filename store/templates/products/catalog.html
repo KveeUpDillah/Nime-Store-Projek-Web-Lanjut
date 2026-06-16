@@ -59,7 +59,7 @@
               Anime: {{ product.anime.title }}
             </p>
           {% endif %}
-            <p class="fw-bold">Rp {{ product.price }}</p>
+            <p class="fw-bold">Rp {{ product.formatted_price }}</p>
             <p>Stok: {{ product.stock }}</p>
 
             <a href="{% url 'product_detail' product.id %}" class="btn btn-dark">

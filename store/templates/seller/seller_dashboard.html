@@ -37,7 +37,7 @@
           <tr>
             <td>{{ product.name }}</td>
             <td>{{ product.category|default:"-" }}</td>
-            <td>Rp {{ product.price }}</td>
+            <td>Rp {{ product.formatted_price }}</td>
             <td>{{ product.stock }}</td>
             <td>
               {% if product.is_active %}
