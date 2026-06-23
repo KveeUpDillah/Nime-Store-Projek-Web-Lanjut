@@ -33,9 +33,6 @@
     <button type="button" class="btn btn-primary btn-add-to-cart" data-id="{{ product.id }}">
       Tambah ke Keranjang
     </button>
-    <a href="{% url 'checkout' %}?product_id={{ product.id }}" class="btn btn-success">
-      Checkout
-    </a>
   </div>
 {% else %}
   <a href="{% url 'login' %}" class="btn btn-dark">
@@ -102,16 +99,25 @@ document.querySelectorAll('.btn-add-to-cart').forEach(button => {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                // Pop-up animasi sukses yang elegan dan hilang sendiri
                 Swal.fire({
                     icon: 'success',
-                    title: 'Berhasil!',
-                    text: data.pesan,
-                    showConfirmButton: false,
-                    timer: 2000
+                    title: 'Produk Berhasil Ditambahkan',
+                    text: 'Apa yang ingin Anda lakukan selanjutnya?',
+                    showCancelButton: true,
+                    confirmButtonText: 'Lihat Keranjang',
+                    cancelButtonText: 'Lanjut Belanja',
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#6c757d'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = "{% url 'cart' %}";
+                    }
+
+                    else if (result.dismiss === Swal.DismissReason.cancel) {
+                        window.location.href = "{% url 'catalog' %}";
+                    }
                 });
             } else {
-                // Pop-up animasi gagal/peringatan stok
                 Swal.fire({
                     icon: 'warning',
                     title: 'Waduh...',
@@ -120,7 +126,15 @@ document.querySelectorAll('.btn-add-to-cart').forEach(button => {
                 });
             }
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            console.error('Error:', error);
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Terjadi Kesalahan',
+                text: 'Gagal menambahkan produk ke keranjang.'
+            });
+        });
     });
 });
 </script>

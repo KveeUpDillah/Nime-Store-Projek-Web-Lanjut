@@ -14,6 +14,9 @@
     <table class="table table-bordered align-middle">
       <thead>
         <tr>
+          <th class="text-center align-middle">
+            <input type="checkbox" id="select-all" title="Pilih Semua">
+          </th>
           <th>Produk</th>
           <th>Harga</th>
           <th>Jumlah</th>
@@ -25,6 +28,9 @@
       <tbody>
         {% for item in cart.items.all %}
           <tr id="cart-row-{{ item.id }}">
+            <td>
+              <input type="checkbox" class="item-checkbox" data-id="{{ item.id }}">
+            </td>
             <td>{{ item.product.name }}</td>
             <td>Rp {{ item.product.formatted_price }}</td>
             <td class="text-center">
@@ -54,13 +60,19 @@
           </tr>
         {% empty %}
           <tr>
-            <td colspan="5" class="text-center">
+            <td colspan="6" class="text-center">
               Keranjang masih kosong.
             </td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
+  </div>
+
+  <div class="d-flex justify-content-end">
+    <button id="btn-checkout" class="btn btn-primary" disabled>
+      Check Out
+    </button>
   </div>
 </section>
 
@@ -101,7 +113,7 @@ document.querySelectorAll('.btn-ubah-qty').forEach(button => {
     });
 });
 
-// 2. Logika Tombol Hapus (AJAX + SweetAlert2)
+// 2. Logika Tombol Hapus
 document.querySelectorAll('.btn-hapus-item').forEach(button => {
     button.addEventListener('click', function() {
         const itemId = this.dataset.id;
@@ -136,15 +148,15 @@ document.querySelectorAll('.btn-hapus-item').forEach(button => {
                             timer: 1500
                         });
                         
-                        // Efek animasi memudar saat baris menghilang
                         const barisTabel = document.getElementById(`cart-row-${itemId}`);
                         if (barisTabel) {
                             barisTabel.style.transition = 'all 0.5s ease';
                             barisTabel.style.opacity = '0';
                             setTimeout(() => {
                                 barisTabel.remove();
-                                
-                                // Jika barang di tabel habis total, reload biar muncul teks "Keranjang kosong"
+                                syncSelectAll();
+                                updateCheckoutButton();
+
                                 const sisaBaris = document.querySelectorAll('tbody tr');
                                 if (sisaBaris.length === 0 || (sisaBaris.length === 1 && sisaBaris[0].querySelector('td[colspan]'))) {
                                     location.reload();
@@ -159,6 +171,68 @@ document.querySelectorAll('.btn-hapus-item').forEach(button => {
             }
         });
     });
+});
+
+// 3. Logika Checkbox Select All & Per Item
+const selectAll = document.getElementById('select-all');
+const btnCheckout = document.getElementById('btn-checkout');
+
+function getItemCheckboxes() {
+    return document.querySelectorAll('.item-checkbox');
+}
+
+function updateCheckoutButton() {
+    const anyChecked = [...getItemCheckboxes()].some(cb => cb.checked);
+    btnCheckout.disabled = !anyChecked;
+}
+
+function syncSelectAll() {
+    const checkboxes = getItemCheckboxes();
+    selectAll.checked = checkboxes.length > 0 && [...checkboxes].every(cb => cb.checked);
+    selectAll.indeterminate = [...checkboxes].some(cb => cb.checked) && !selectAll.checked;
+}
+
+selectAll.addEventListener('change', function() {
+    getItemCheckboxes().forEach(cb => cb.checked = this.checked);
+    updateCheckoutButton();
+});
+
+document.querySelector('tbody').addEventListener('change', function(e) {
+    if (e.target.classList.contains('item-checkbox')) {
+        syncSelectAll();
+        updateCheckoutButton();
+    }
+});
+
+// 4. Logika Tombol Checkout di Keranjang
+btnCheckout.addEventListener('click', function() {
+    const selectedIds = [...getItemCheckboxes()]
+        .filter(cb => cb.checked)
+        .map(cb => cb.dataset.id);
+
+    if (selectedIds.length === 0) return;
+
+    // Kirim selected item ids ke checkout via form POST
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = "{% url 'checkout' %}";
+
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = '{{ csrf_token }}';
+    form.appendChild(csrfInput);
+
+    selectedIds.forEach(id => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'selected_items';
+        input.value = id;
+        form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
 });
 </script>
 

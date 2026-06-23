@@ -1,16 +1,21 @@
 import requests
+import re
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
 from store.decorators import moderator_required, seller_required, customer_required
 from store.permission import is_moderator
 from store.models import Product
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import Review, SellerProfile, Product, ProductReview, Cart, CartItem, UserProfile, Anime
+from .models import Review, SellerProfile, Product, ProductReview, Cart, CartItem, UserProfile, Anime, Category
 from .forms import ReviewForm, SellerProfileForm, ProductForm, ProductReviewForm, UserProfileForm, SellerProfileEditForm
 from django.contrib import messages
 from django.db.models import Q
 from django.contrib.auth.models import Group
 from django.http import JsonResponse
+from .chatbox import ask_ai, SYSTEM_PROMPT, BLOCKED_KEYWORDS
 
 def index(request):
     products = Product.objects.all()
@@ -340,20 +345,17 @@ def update_cart_item(request, item_id):
 def remove_from_cart(request, item_id):
     cart = get_object_or_404(Cart, user=request.user)
     item = get_object_or_404(CartItem, id=item_id, cart=cart)
-    nama_produk = item.product.name # Ambil nama produk buat pesan sukses
+    nama_produk = item.product.name
 
     if request.method == 'POST':
-        # 1. Hapus item dari database
         item.delete()
         
-        # 2. POTONG DI SINI JIKA REQUEST DARI JAVASCRIPT (AJAX)
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({
                 'status': 'success',
                 'pesan': f'"{nama_produk}" berhasil dihapus dari keranjang.'
             })
         
-        # Ini hanya berjalan jika diakses lewat form HTML biasa (tanpa AJAX)
         messages.success(request, 'Produk berhasil dihapus dari keranjang.')
 
     return redirect('cart/cart')
@@ -362,10 +364,14 @@ def checkout(request):
     cart = get_object_or_404(Cart, user=request.user)
 
     if request.method == 'POST':
-        # Proses checkout (misalnya buat Order, kurangi stok, dll)
-        # Di sini kita hanya hapus semua item di keranjang sebagai simulasi checkout
-        cart.items.all().delete()
-        messages.success(request, 'Checkout berhasil! Terima kasih atas pembelian Anda.')
+        selected_items = request.POST.getlist('selected_items')
+
+        if selected_items:
+            cart.items.filter(id__in=selected_items).delete()
+            messages.success(request, 'Checkout berhasil! Terima kasih atas pembelian Anda.')
+        else:
+            messages.error(request, 'Tidak ada barang yang dipilih.')
+
         return redirect('catalog')
 
     return render(request, 'cart/checkout.html', {
@@ -516,3 +522,150 @@ def anime_save(request):
         return redirect('anime_search_api')
 
     return redirect('anime_search_api')
+
+@csrf_exempt
+def widget_chat(request):
+
+    print("===== REQUEST MASUK =====")
+
+    if request.method == "POST":
+
+        data = json.loads(request.body)
+
+        question = data.get("message", "")
+
+        print("QUESTION:", question)
+
+        products = search_products(question)
+
+        print("PRODUCT COUNT:", len(products))
+
+        context = build_product_context(products)
+
+        print("CONTEXT:")
+        print(context)
+
+        answer = ask_ai(
+            question,
+            context
+        )
+
+        print("ANSWER:")
+        print(answer)
+
+        return JsonResponse({
+        "answer": answer,
+        "products": [
+            {
+                "id": p.id,
+                "name": p.name,
+                "price": int(p.price),
+                "image": p.image.url if p.image else None,
+                "anime": p.anime.title if p.anime else "-",
+                "category": p.category.name if p.category else "-"
+            }
+            for p in products
+        ]
+    })
+
+    return JsonResponse({
+        "error": "Invalid request"
+    })
+
+
+def find_category(question):
+
+    question = question.lower()
+
+    for category in Category.objects.all():
+
+        if category.name.lower() in question:
+            return category
+
+    return None
+
+def search_products(question):
+
+    anime = find_anime(question)
+
+    category = find_category(question)
+
+    products = Product.objects.filter(
+        is_active=True,
+        stock__gt=0
+    )
+
+    if anime:
+        products = products.filter(
+            anime=anime
+        )
+
+    if category:
+        products = products.filter(
+            category=category
+        )
+
+    return products[:10]
+
+def get_relevant_products(question):
+
+    keywords = re.findall(r'\w+', question.lower())
+
+    query = Q()
+
+    for keyword in keywords:
+        query |= Q(name__icontains=keyword)
+        query |= Q(description__icontains=keyword)
+        query |= Q(anime__title__icontains=keyword)
+        query |= Q(category__name__icontains=keyword)
+
+    return Product.objects.filter(
+        query,
+        is_active=True
+    ).distinct()[:10]
+
+def build_product_context(products):
+
+    context = ""
+
+    for p in products:
+
+        category_name = (
+            p.category.name
+            if p.category
+            else "-"
+        )
+
+        anime_name = (
+            p.anime.title
+            if p.anime
+            else "-"
+        )
+
+        context += f"""
+Nama: {p.name}
+Kategori: {category_name}
+Anime: {anime_name}
+Harga: Rp{int(p.price)}
+Stok: {p.stock}
+Deskripsi: {p.description}
+
+"""
+    return context
+
+def find_anime(question):
+
+    question = question.lower()
+
+    for anime in Anime.objects.all():
+
+        if anime.title.lower() in question:
+            return anime
+
+    return None
+
+def chatbot_page(request):
+    return render(
+        request,
+        'chatbox_ai/widget_chat.html'
+    )

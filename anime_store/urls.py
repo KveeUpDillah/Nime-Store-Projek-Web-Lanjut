@@ -54,6 +54,9 @@ urlpatterns = [
 
     path('anime/search/', views.anime_search_api, name='anime_search_api'),
     path('anime/save/', views.anime_save, name='anime_save'),
+
+    path('chatbox_ai/widget_chat/', views.widget_chat, name='widget_chat'),
+    path('chatbot/', views.chatbot_page, name='chatbot_page'),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
