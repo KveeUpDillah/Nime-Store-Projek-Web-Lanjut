@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+    @page {
+        size: A4;
+        margin: 2cm;
+    }
+    body {
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 11pt;
+        color: #222;
+    }
+    h1 {
+        font-size: 18pt;
+        margin-bottom: 0;
+        color: #111;
+    }
+    .subtitle {
+        color: #666;
+        font-size: 10pt;
+        margin-top: 2px;
+        margin-bottom: 20px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+    .info-table td {
+        padding: 3px 0;
+        font-size: 10pt;
+        vertical-align: top;
+    }
+    .info-table td.label {
+        width: 130px;
+        color: #555;
+    }
+    .items-table {
+        margin-top: 20px;
+    }
+    .items-table th {
+        background-color: #f0f0f0;
+        border-bottom: 1px solid #999;
+        padding: 6px 8px;
+        text-align: left;
+        font-size: 10pt;
+    }
+    .items-table td {
+        border-bottom: 1px solid #ddd;
+        padding: 6px 8px;
+        font-size: 10pt;
+    }
+    .text-right {
+        text-align: right;
+    }
+    .total-row td {
+        border-top: 2px solid #333;
+        border-bottom: none;
+        font-weight: bold;
+        font-size: 12pt;
+        padding-top: 10px;
+    }
+    .footer-note {
+        margin-top: 40px;
+        font-size: 9pt;
+        color: #888;
+        text-align: center;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        background-color: #d4edda;
+        color: #155724;
+        font-size: 9pt;
+        border-radius: 3px;
+    }
+</style>
+</head>
+<body>
+
+    <h1>Struk Pembayaran</h1>
+    <p class="subtitle">Order #{{ checkout.id }} &mdash; <span class="status-badge">{{ checkout.get_status_display }}</span></p>
+
+    <table class="info-table">
+        <tr>
+            <td class="label">Nama Pembeli</td>
+            <td>: {{ checkout.user.username }}</td>
+        </tr>
+        <tr>
+            <td class="label">Nama Penerima</td>
+            <td>: {{ checkout.recipient_name }}</td>
+        </tr>
+        <tr>
+            <td class="label">Alamat Pengiriman</td>
+            <td>: {{ checkout.address }}, {{ checkout.city }}, {{ checkout.province }} {{ checkout.postal_code }}</td>
+        </tr>
+        <tr>
+            <td class="label">Tanggal Pesanan</td>
+            <td>: {{ checkout.created_at|date:"d F Y, H:i" }}</td>
+        </tr>
+        {% if checkout.payment and checkout.payment.paid_at %}
+        <tr>
+            <td class="label">Tanggal Dibayar</td>
+            <td>: {{ checkout.payment.paid_at|date:"d F Y, H:i" }}</td>
+        </tr>
+        {% endif %}
+    </table>
+
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>Produk</th>
+                <th class="text-right">Qty</th>
+                <th class="text-right">Harga Satuan</th>
+                <th class="text-right">Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td class="text-right">{{ item.quantity }}</td>
+                <td class="text-right">Rp {{ item.product.formatted_price }}</td>
+                <td class="text-right">Rp {{ item.formatted_subtotal }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="total-row">
+                <td colspan="3" class="text-right">TOTAL</td>
+                <td class="text-right">Rp {{ order.formatted_total_price }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p class="footer-note">
+        Struk ini dibuat secara otomatis sebagai bukti transaksi yang sah.
+    </p>
+
+</body>
+</html>

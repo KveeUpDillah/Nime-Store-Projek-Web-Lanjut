@@ -27,6 +27,7 @@ urlpatterns = [
 
     path('become-seller/', views.become_seller, name='become_seller'),
     path('seller/dashboard/', views.seller_dashboard, name='seller_dashboard'),
+    path('seller/order/<int:checkout_id>/confirm/', views.confirm_payment, name='confirm_payment'),
 
     path('seller/product/create/', views.product_create, name='product_create'),
     path('seller/product/<int:product_id>/edit/', views.product_update, name='product_update'),
@@ -40,7 +41,14 @@ urlpatterns = [
     path('cart/add/<int:product_id>/', views.add_to_cart, name='add_to_cart'),
     path('cart/update/<int:item_id>/', views.update_cart_item, name='update_cart_item'),
     path('cart/remove/<int:item_id>/', views.remove_from_cart, name='remove_from_cart'),
+    
     path('checkout/', views.checkout, name='checkout'),
+    path('place-order/', views.place_order, name='place_order'),
+    path("orders/cancel/<int:checkout_id>/", views.cancel_order, name="cancel_order"),
+
+    path('orders/cust_orders/', views.cust_orders, name='cust_orders'),
+    path('orders/<int:checkout_id>/receipt/', views.receipt_data, name='receipt_data'),
+    path('orders/<int:checkout_id>/receipt/pdf/', views.receipt_pdf, name='receipt_pdf'),
 
     path('profile/', views.buyer_profile, name='buyer_profile'),
     path('profile/edit/', views.edit_buyer_profile, name='edit_buyer_profile'),
@@ -51,6 +59,7 @@ urlpatterns = [
     path('seller/<int:seller_id>/', views.seller_profile, name='seller_profile'),
 
     path('dashboard/reviews/', views.review_dashboard, name='review_dashboard'),
+    path("review/<int:review_id>/reply/", views.reply_review,name="reply_review"),
 
     path('anime/search/', views.anime_search_api, name='anime_search_api'),
     path('anime/save/', views.anime_save, name='anime_save'),

@@ -1,77 +1,145 @@
 {% extends 'layouts/index.html' %}
 {% block content %}
 
+<style>
+.product-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.product-img-wrapper {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.sold-out-ribbon {
+    position: absolute;
+    top: 28px;
+    right: -52px;
+    width: 220px;
+    background: #c0392b;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    text-align: center;
+    line-height: 2.4;
+    transform: rotate(45deg);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.sold-out-img {
+    filter: grayscale(100%) brightness(0.75);
+}
+
+.sold-out-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(40, 40, 40, 0.35);
+    z-index: 1;
+    pointer-events: none;
+}
+</style>
+
 <section class="container py-5">
   <h1 class="fw-bold mb-4">Catalog Produk</h1>
 
   <form method="GET" action="{% url 'catalog' %}" class="mb-4">
-  <div class="row g-2">
+    <div class="row g-2">
 
-    <div class="col-md-6">
-      <input type="text"
-             name="q"
-             class="form-control"
-             placeholder="Cari produk, kategori, anime, atau nama toko..."
-             value="{{ query }}">
+      <div class="col-md-5">
+        <input type="text"
+               name="q"
+               class="form-control"
+               placeholder="Cari produk, kategori, anime, atau nama toko..."
+               value="{{ query }}">
+      </div>
+
+      <div class="col-md-3">
+        <select name="anime" class="form-control">
+          <option value="">Semua Anime</option>
+          {% for anime in anime_list %}
+            <option value="{{ anime.id }}"
+              {% if anime_id == anime.id|stringformat:"s" %}selected{% endif %}>
+              {{ anime.title }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <select name="category" class="form-control">
+          <option value="">Semua Tipe Merch</option>
+          {% for category in category_list %}
+            <option value="{{ category.id }}"
+              {% if category_id == category.id|stringformat:"s" %}selected{% endif %}>
+              {{ category.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-1">
+        <button type="submit" class="btn btn-dark w-100">
+          Filter
+        </button>
+      </div>
+
     </div>
+  </form>
 
-    <div class="col-md-4">
-      <select name="anime" class="form-control">
-        <option value="">Semua Anime</option>
-
-        {% for anime in anime_list %}
-          <option value="{{ anime.id }}"
-            {% if anime_id == anime.id|stringformat:"s" %}selected{% endif %}>
-            {{ anime.title }}
-          </option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <div class="col-md-2">
-      <button type="submit" class="btn btn-dark w-100">
-        Filter
-      </button>
-    </div>
-
-  </div>
-</form>
-{% if query or anime_id %}
-  <a href="{% url 'catalog' %}" class="btn btn-outline-secondary mb-4">
-    Reset Filter
-  </a>
-{% endif %}
+  {% if query or anime_id or category_id %}
+    <a href="{% url 'catalog' %}" class="btn btn-outline-secondary mb-4">
+      Reset Filter
+    </a>
+  {% endif %}
 
   <div class="row">
     {% for product in products %}
       <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
+        <a href="{% url 'product_detail' product.id %}" class="text-decoration-none text-reset">
+          <div class="card h-100 shadow-sm product-card">
 
-          {% if product.image %}
-            <img src="{{ product.image.url }}" class="card-img-top" style="height:250px; object-fit:cover;">
-          {% endif %}
+            <div class="product-img-wrapper">
+              {% if product.image %}
+                <img src="{{ product.image.url }}" class="card-img-top {% if product.is_sold_out %}sold-out-img{% endif %}" style="height:250px; object-fit:cover;">
+              {% endif %}
 
-          <div class="card-body">
-            <h5 class="fw-bold">{{ product.name }}</h5>
-            <p class="text-muted">{{ product.description|truncatewords:15 }}</p>
-            {% if product.anime %}
-            <p class="text-muted mb-1">
-              Anime: {{ product.anime.title }}
-            </p>
-          {% endif %}
-            <p class="fw-bold">Rp {{ product.formatted_price }}</p>
-            <p>Stok: {{ product.stock }}</p>
+              {% if product.is_sold_out %}
+                <div class="sold-out-overlay"></div>
+                <div class="sold-out-ribbon">SOLD</div>
+              {% endif %}
+            </div>
 
-            <a href="{% url 'product_detail' product.id %}" class="btn btn-dark">
-              Lihat Detail
-            </a>
+            <div class="card-body">
+              <h5 class="fw-bold">{{ product.name }}</h5>
+              <p class="text-muted">{{ product.description|truncatewords:15 }}</p>
+
+              {% if product.anime %}
+                <p class="text-muted mb-1">
+                  Anime: {{ product.anime.title }}
+                </p>
+              {% endif %}
+
+              <p class="fw-bold">Rp {{ product.formatted_price }}</p>
+              <p>Stok: {{ product.stock }}</p>
+            </div>
           </div>
-        </div>
+        </a>
       </div>
     {% empty %}
       <p>Belum ada produk yang tersedia.</p>
     {% endfor %}
   </div>
 </section>
-
 {% endblock content %}

@@ -1,4 +1,5 @@
 {% extends 'layouts/index.html' %}
+{% load static %}
 {% block content %}
 
 <section class="container py-5">
@@ -11,229 +12,83 @@
   {% endif %}
 
   <div class="table-responsive">
-    <table class="table table-bordered align-middle">
-      <thead>
-        <tr>
-          <th class="text-center align-middle">
+  <table class="table table-bordered align-middle">
+    <thead>
+      <tr>
+        <th class="text-center align-middle">
+          <div class="d-flex justify-content-center align-items-center">
             <input type="checkbox" id="select-all" title="Pilih Semua">
-          </th>
-          <th>Produk</th>
-          <th>Harga</th>
-          <th>Jumlah</th>
-          <th>Subtotal</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
+          </div>
+        </th>
+        <th>Produk</th>
+        <th>Harga</th>
+        <th>Jumlah</th>
+        <th>Subtotal</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
 
-      <tbody>
-        {% for item in cart.items.all %}
-          <tr id="cart-row-{{ item.id }}">
-            <td>
-              <input type="checkbox" class="item-checkbox" data-id="{{ item.id }}">
-            </td>
-            <td>{{ item.product.name }}</td>
-            <td>Rp {{ item.product.formatted_price }}</td>
-            <td class="text-center">
-              <div class="d-flex align-items-center gap-2">
-                <button type="button" 
-                        class="btn btn-sm btn-outline-secondary py-0 px-2 btn-ubah-qty" 
-                        data-id="{{ item.id }}" 
-                        data-aksi="kurang">-</button>
-                
-                <span class="fw-bold px-1" id="qty-{{ item.id }}">{{ item.quantity }}</span>
-                
-                <button type="button" 
-                        class="btn btn-sm btn-outline-secondary py-0 px-2 btn-ubah-qty" 
-                        data-id="{{ item.id }}" 
-                        data-aksi="tambah">+</button>
-              </div>
-            </td>
-            <td id="subtotal-{{ item.id }}">Rp {{ item.formatted_subtotal }}</td>
-            <td>
-              <button type="button" 
-                      class="btn btn-sm btn-danger btn-hapus-item" 
-                      data-id="{{ item.id }}"
-                      data-nama="{{ item.product.name }}">
-                Hapus
-              </button>
-            </td>
-          </tr>
-        {% empty %}
-          <tr>
-            <td colspan="6" class="text-center">
-              Keranjang masih kosong.
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+    <tbody>
+      {% for item in cart.items.all %}
+      <tr id="cart-row-{{ item.id }}">
+        <td class="text-center align-middle">
+          <div class="d-flex justify-content-center align-items-center">
+            <input type="checkbox"
+                   class="item-checkbox"
+                   data-id="{{ item.id }}">
+          </div>
+        </td>
 
-  <div class="d-flex justify-content-end">
-    <button id="btn-checkout" class="btn btn-primary" disabled>
-      Check Out
+        <td>{{ item.product.name }}</td>
+
+        <td>Rp {{ item.product.formatted_price }}</td>
+
+        <td class="text-center">
+          <div class="d-flex align-items-center gap-2">
+            <button type="button"
+                    class="btn btn-sm btn-outline-secondary py-0 px-2 btn-ubah-qty"
+                    data-id="{{ item.id }}"
+                    data-aksi="kurang">-</button>
+
+            <span class="fw-bold px-1" id="qty-{{ item.id }}">{{ item.quantity }}</span>
+
+            <button type="button"
+                    class="btn btn-sm btn-outline-secondary py-0 px-2 btn-ubah-qty"
+                    data-id="{{ item.id }}"
+                    data-aksi="tambah">+</button>
+          </div>
+        </td>
+
+        <td id="subtotal-{{ item.id }}">
+          Rp {{ item.formatted_subtotal }}
+        </td>
+
+        <td>
+          <button type="button"
+                  class="btn btn-sm btn-danger btn-hapus-item"
+                  data-id="{{ item.id }}"
+                  data-nama="{{ item.product.name }}">
+            Hapus
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+  <form method="POST" action="{% url 'checkout' %}" id="form-checkout" class="d-flex justify-content-end">
+    {% csrf_token %}
+    <div id="hidden-inputs"></div>
+    <button type="submit" id="btn-checkout" class="btn btn-primary" disabled>
+        Check Out
     </button>
+</form>
   </div>
 </section>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<script>
-// === LOGIKA SCRIPT UTAMA KELOLA KERANJANG ===
-
-// 1. Logika Update Jumlah (+ / -)
-document.querySelectorAll('.btn-ubah-qty').forEach(button => {
-    button.addEventListener('click', function() {
-        const itemId = this.dataset.id;
-        const aksi = this.dataset.aksi;
-        
-        fetch(`/cart/update/${itemId}/?aksi=${aksi}`, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                const qtyElement = document.getElementById(`qty-${itemId}`);
-                const subtotalElement = document.getElementById(`subtotal-${itemId}`);
-                
-                if (data.jumlah_baru === 0) {
-                    location.reload();
-                } else {
-                    if (qtyElement) qtyElement.innerText = data.jumlah_baru;
-                    if (subtotalElement) subtotalElement.innerText = 'Rp ' + data.subtotal_baru;
-                }
-            } else {
-                alert('Gagal mengubah jumlah barang');
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    });
-});
-
-// 2. Logika Tombol Hapus
-document.querySelectorAll('.btn-hapus-item').forEach(button => {
-    button.addEventListener('click', function() {
-        const itemId = this.dataset.id;
-        const namaProduk = this.dataset.nama;
-        
-        Swal.fire({
-            title: 'Apakah kamu yakin?',
-            text: `Menghapus "${namaProduk}" dari keranjang?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Ya, Hapus!',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                fetch(`{% url 'remove_from_cart' 0 %}`.replace('0', itemId), {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Terhapus!',
-                            text: data.pesan,
-                            showConfirmButton: false,
-                            timer: 1500
-                        });
-                        
-                        const barisTabel = document.getElementById(`cart-row-${itemId}`);
-                        if (barisTabel) {
-                            barisTabel.style.transition = 'all 0.5s ease';
-                            barisTabel.style.opacity = '0';
-                            setTimeout(() => {
-                                barisTabel.remove();
-                                syncSelectAll();
-                                updateCheckoutButton();
-
-                                const sisaBaris = document.querySelectorAll('tbody tr');
-                                if (sisaBaris.length === 0 || (sisaBaris.length === 1 && sisaBaris[0].querySelector('td[colspan]'))) {
-                                    location.reload();
-                                }
-                            }, 500);
-                        }
-                    } else {
-                        Swal.fire('Gagal!', 'Terjadi kesalahan.', 'error');
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-            }
-        });
-    });
-});
-
-// 3. Logika Checkbox Select All & Per Item
-const selectAll = document.getElementById('select-all');
-const btnCheckout = document.getElementById('btn-checkout');
-
-function getItemCheckboxes() {
-    return document.querySelectorAll('.item-checkbox');
-}
-
-function updateCheckoutButton() {
-    const anyChecked = [...getItemCheckboxes()].some(cb => cb.checked);
-    btnCheckout.disabled = !anyChecked;
-}
-
-function syncSelectAll() {
-    const checkboxes = getItemCheckboxes();
-    selectAll.checked = checkboxes.length > 0 && [...checkboxes].every(cb => cb.checked);
-    selectAll.indeterminate = [...checkboxes].some(cb => cb.checked) && !selectAll.checked;
-}
-
-selectAll.addEventListener('change', function() {
-    getItemCheckboxes().forEach(cb => cb.checked = this.checked);
-    updateCheckoutButton();
-});
-
-document.querySelector('tbody').addEventListener('change', function(e) {
-    if (e.target.classList.contains('item-checkbox')) {
-        syncSelectAll();
-        updateCheckoutButton();
-    }
-});
-
-// 4. Logika Tombol Checkout di Keranjang
-btnCheckout.addEventListener('click', function() {
-    const selectedIds = [...getItemCheckboxes()]
-        .filter(cb => cb.checked)
-        .map(cb => cb.dataset.id);
-
-    if (selectedIds.length === 0) return;
-
-    // Kirim selected item ids ke checkout via form POST
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = "{% url 'checkout' %}";
-
-    const csrfInput = document.createElement('input');
-    csrfInput.type = 'hidden';
-    csrfInput.name = 'csrfmiddlewaretoken';
-    csrfInput.value = '{{ csrf_token }}';
-    form.appendChild(csrfInput);
-
-    selectedIds.forEach(id => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'selected_items';
-        input.value = id;
-        form.appendChild(input);
-    });
-
-    document.body.appendChild(form);
-    form.submit();
-});
-</script>
+<script src="{% static 'js/cart/cart.js' %}" defer></script>
 
 {% endblock content %}
