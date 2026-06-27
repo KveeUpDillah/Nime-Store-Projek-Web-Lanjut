@@ -1,0 +1,150 @@
+:root {
+    --brand-green:  #c8e6a0;
+    --brand-yellow: #f5e6a0;
+    --brand-pink:   #f5b8c8;
+    --brand-dark:   #111111;
+    --brand-gray:   #555555;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: #ffffff;
+    color: var(--brand-dark);
+  }
+
+/* ── NAVBAR ─────────────────────────────── */
+.navbar {
+    background: #ffffff !important;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 0.75rem 2rem;
+}
+
+.navbar-brand {
+    font-weight: 900;
+    font-size: 1.15rem;
+    color: var(--brand-dark) !important;
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+}
+
+.navbar-brand .brand-icon {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, var(--brand-green), var(--brand-yellow));
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .85rem;
+}
+
+.navbar-nav .nav-link {
+    font-size: .88rem;
+    font-weight: 500;
+    color: var(--brand-gray) !important;
+    padding: .4rem .85rem !important;
+    transition: .2s;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+    color: var(--brand-dark) !important;
+}
+
+.nav-login {
+    font-weight: 700;
+    font-size: .95rem;
+    color: #7c3aed !important;
+    text-decoration: none;
+    margin-right: 1rem;
+    transition: .2s;
+}
+
+.nav-login:hover {
+    opacity: .75;
+}
+
+/* ===== RIGHT ICONS ===== */
+
+.nav-socials{
+    display:flex;
+    align-items:center;
+    gap:3px;
+}
+
+.cart-icon,
+.profile-icon,
+.nav-socials a{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    width:34px;
+    height:34px;
+
+    color:var(--brand-gray);
+    text-decoration:none;
+
+    font-size:1.25rem;
+    line-height:1;
+
+    transition:.2s ease;
+}
+
+.cart-icon:hover,
+.profile-icon:hover,
+.nav-socials a:hover{
+    color:var(--brand-dark);
+}
+
+.cart-icon{
+    margin-right:4px;
+}
+
+.profile-icon.dropdown-toggle::after{
+    display:none;
+}
+
+.cart-icon i,
+.profile-icon i,
+.nav-socials a i{
+    display:block;
+    line-height:1;
+}
+
+.bi-cart3 {
+    font-size: 1.35rem;
+}
+
+.bi-person-circle {
+    font-size: 1.45rem;
+}
+
+.bi-instagram,
+.bi-facebook,
+.bi-twitter-x {
+    font-size: 1.4rem;
+}
+
+.bi-instagram{
+    transform: translateY(-1px);
+}
+
+.bi-facebook{
+    transform: translateY(-1px);
+}
+
+.bi-twitter-x{
+    transform: translateY(-1px);
+}
+
+.bi-cart3{
+    transform: translateY(0px);
+}
+
+.bi-person-circle{
+    transform: translateY(0px);
+}
