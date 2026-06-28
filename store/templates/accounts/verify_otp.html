@@ -1,0 +1,183 @@
+{% extends 'layouts/index.html' %}
+
+{% block content %}
+
+<style>
+
+.container{
+    max-width:500px;
+    margin:70px auto;
+    background:white;
+    padding:40px;
+    border-radius:10px;
+    box-shadow:0 5px 15px rgba(0,0,0,.1);
+}
+
+h2{
+    text-align:center;
+    margin-bottom:10px;
+}
+
+p{
+    text-align:center;
+    color:#666;
+    margin-bottom:30px;
+}
+
+.input-group{
+    margin-bottom:20px;
+}
+
+.input-group input{
+    width:100%;
+    height:55px;
+    padding:15px;
+    font-size:18px;
+}
+
+button{
+    width:100%;
+    height:50px;
+    background:black;
+    color:white;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.error{
+    color:red;
+    margin-bottom:15px;
+    text-align:center;
+}
+
+.success{
+    color:green;
+    margin-bottom:15px;
+    text-align:center;
+}
+
+.resend{
+    text-align:center;
+    margin-top:20px;
+}
+
+.resend a{
+    text-decoration:none;
+}
+
+#resendBtn{
+
+    margin-top:10px;
+
+    background:#6c757d;
+
+}
+
+#resendBtn:disabled{
+
+    opacity:.6;
+
+    cursor:not-allowed;
+
+}
+
+</style>
+
+<div class="container">
+
+    <h2>Verifikasi Email</h2>
+
+    <p>
+        Kami telah mengirimkan kode OTP ke email Anda.
+    </p>
+
+    {% if pesan %}
+        <div class="error">
+            {{ pesan }}
+        </div>
+    {% endif %}
+
+    {% if sukses %}
+        <div class="success">
+            {{ sukses }}
+        </div>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="input-group">
+            <input
+                type="text"
+                name="otp"
+                maxlength="6"
+                placeholder="Masukkan 6 digit OTP"
+                required>
+
+        </div>
+        <button type="submit">
+            Verifikasi OTP
+        </button>
+    </form>
+    <div class="resend">
+    <p>
+        OTP berlaku selama
+        <span id="countdown">05:00</span>
+    </p>
+    <form action="{% url 'resend_otp' %}" method="POST">
+        {% csrf_token %}
+        <button
+            type="submit"
+            id="resendBtn"
+            disabled>
+            Kirim Ulang OTP
+        </button>
+    </form>
+</div>
+    <p>
+    Kode OTP berlaku selama
+    <span id="countdown">05:00</span>
+</p>
+</div>
+
+<script>
+const expiredAt = {{ expired_timestamp }};
+
+const countdown = document.getElementById("countdown");
+
+const resendBtn = document.getElementById("resendBtn");
+
+function updateCountdown(){
+
+    const now = Date.now();
+
+    const distance = expiredAt - now;
+
+    if(distance <= 0){
+
+        clearInterval(timer);
+
+        countdown.innerHTML = "00:00";
+
+        resendBtn.disabled = false;
+
+        resendBtn.style.background = "#0d6efd";
+
+        return;
+    }
+
+    const minutes = Math.floor(distance / 60000);
+
+    const seconds = Math.floor((distance % 60000)/1000);
+
+    countdown.innerHTML =
+        String(minutes).padStart(2,"0")
+        + ":"
+        + String(seconds).padStart(2,"0");
+
+}
+
+updateCountdown();
+const timer = setInterval(updateCountdown,1000);
+</script>
+{% endblock %}

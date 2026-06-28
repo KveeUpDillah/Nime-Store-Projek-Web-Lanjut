@@ -1,0 +1,63 @@
+{% extends "admin_panel/base.html" %}
+{% block title %}Checkout{% endblock %}
+{% block page_title %}Checkout{% endblock %}
+{% block content %}
+<div class="filter-bar">
+  <form method="get" class="d-flex gap-2">
+    <select name="status" class="form-select form-select-sm" style="width:auto">
+      <option value="">Semua status</option>
+      {% for val, label in statuses %}
+      <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-sm btn-outline-secondary">Filter</button>
+    <a href="{% url 'admin_checkouts' %}" class="btn btn-sm btn-light">Reset</a>
+  </form>
+</div>
+<div class="admin-table">
+  <table class="table table-hover mb-0">
+    <thead>
+      <tr><th>#</th><th>User</th><th>Penerima</th><th>Kota</th><th>Status</th><th>Pembayaran</th><th>Aksi</th></tr>
+    </thead>
+    <tbody>
+      {% for c in checkouts %}
+      <tr>
+        <td>#{{ c.id }}</td>
+        <td>{{ c.user.username }}</td>
+        <td>{{ c.recipient_name }}<br><small class="text-muted">{{ c.phone_number }}</small></td>
+        <td>{{ c.city }}, {{ c.province }}</td>
+        <td>
+          <form method="post" action="{% url 'admin_checkout_update_status' c.pk %}" class="d-flex gap-1 align-items-center">
+            {% csrf_token %}
+            <select name="status" class="form-select form-select-sm" style="width:auto;font-size:12px" onchange="this.form.submit()">
+              {% for val, label in statuses %}
+              <option value="{{ val }}" {% if c.status == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </form>
+        </td>
+        <td>
+          {% if c.payment %}
+            {% if c.payment.status == 'paid' %}<span class="badge-status badge-active">Paid</span>
+            {% elif c.payment.status == 'pending' %}<span class="badge-status badge-inactive">Pending</span>
+            {% elif c.payment.status == 'expired' %}<span class="badge-status badge-danger">Expired</span>
+            {% else %}<span class="badge-status badge-neutral">{{ c.payment.status }}</span>{% endif %}
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          <div class="d-flex gap-1">
+            <a href="{% url 'admin_order_detail' c.order.pk %}" class="icon-btn" title="Detail order"><i class="ti ti-eye"></i></a>
+            <form method="post" action="{% url 'admin_checkout_delete' c.pk %}" onsubmit="return confirmDelete(event, 'Checkout #{{ c.id }}')">
+              {% csrf_token %}
+              <button type="submit" class="icon-btn danger" title="Hapus"><i class="ti ti-trash"></i></button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="text-center text-muted py-4">Tidak ada data checkout.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

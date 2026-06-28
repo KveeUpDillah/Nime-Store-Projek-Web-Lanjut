@@ -1,0 +1,31 @@
+{% extends 'layouts/index.html' %}
+{% block content %}
+
+<section class="container py-5">
+  <h1 class="fw-bold mb-4">Edit Profil Seller</h1>
+
+  <form method="POST" enctype="multipart/form-data" class="card p-4 shadow-sm">
+    {% csrf_token %}
+
+    <label class="form-label">Nama Toko</label>
+    {{ form.shop_name }}
+
+    <label class="form-label mt-3">Nomor HP</label>
+    {{ form.phone }}
+
+    <label class="form-label mt-3">Alamat</label>
+    {{ form.address }}
+
+    <label class="form-label mt-3">Foto Toko</label>
+    {{ form.photo }}
+
+    <label class="form-label mt-3">Bio Toko</label>
+    {{ form.bio }}
+
+    <button type="submit" class="btn btn-dark mt-4">
+      Simpan Perubahan
+    </button>
+  </form>
+</section>
+
+{% endblock content %}

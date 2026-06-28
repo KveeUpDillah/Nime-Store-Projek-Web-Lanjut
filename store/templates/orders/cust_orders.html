@@ -1,0 +1,56 @@
+{% extends 'layouts/index.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/orders/cust_orders.css' %}">
+
+<section class="container py-5">
+    <h1 class="fw-bold mb-4">Pesanan Saya</h1>
+
+    {% for checkout in checkouts %}
+    <div class="card mb-3 p-3">
+        <p>Order #{{ checkout.id }} — {{ checkout.get_status_display }}</p>
+        <p>Total: Rp {{ checkout.order.formatted_total_price }}</p>
+        <p>Tanggal: {{ checkout.created_at|date:"d M Y" }}</p>
+
+        <div class="d-flex gap-2">
+            {% if checkout.status == "waiting_payment" %}
+            <form method="POST"
+                  action="{% url 'cancel_order' checkout.id %}"
+                  class="cancel-form mt-3">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm">
+                    Batalkan Pesanan
+                </button>
+            </form>
+            {% endif %}
+
+            {% if checkout.status == "processing" or checkout.status == "shipped" or checkout.status == "delivered" %}
+            <button type="button"
+                    class="btn btn-outline-dark btn-sm mt-3 btn-lihat-struk"
+                    data-checkout-id="{{ checkout.id }}">
+                Lihat Struk
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <p>Belum ada pesanan.</p>
+    {% endfor %}
+</section>
+
+<div id="receiptOverlay" class="receipt-overlay">
+    <div id="receiptPanel" class="receipt-panel">
+        <div class="receipt-panel-header">
+            <span class="fw-bold">Struk Pembayaran</span>
+            <button type="button" id="closeReceiptPanel" class="btn-close-panel" aria-label="Tutup">&times;</button>
+        </div>
+        <div class="receipt-panel-body" id="receiptPanelBody">
+            </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'js/orders/cust_orders.js' %}" defer></script>
+
+{% endblock content %}

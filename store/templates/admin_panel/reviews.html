@@ -1,0 +1,74 @@
+{% extends "admin_panel/base.html" %}
+{% block title %}Review{% endblock %}
+{% block page_title %}Review Produk{% endblock %}
+{% block content %}
+
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tab-product">Review produk</a></li>
+  <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-general">Review umum</a></li>
+</ul>
+
+<div class="tab-content">
+  <!-- Product reviews -->
+  <div class="tab-pane fade show active" id="tab-product">
+    {% for r in product_reviews %}
+    <div class="review-card">
+      <div class="d-flex justify-content-between align-items-start mb-1">
+        <div>
+          <strong style="font-size:13px">{{ r.user.username }}</strong>
+          <span style="font-size:11px;color:#aaa"> · {{ r.product.name }}</span>
+          <div class="stars">{% for i in "12345" %}{% if forloop.counter <= r.rating %}★{% else %}☆{% endif %}{% endfor %}</div>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+          <small class="text-muted">{{ r.created_at|date:"d M Y" }}</small>
+          {% if r.reply %}<span class="badge-status badge-active">Dibalas</span>{% endif %}
+          <form method="post" action="{% url 'admin_product_review_delete' r.pk %}" onsubmit="return confirmDelete(event, 'Review dari {{ r.user.username|escapejs }}')">
+            {% csrf_token %}
+            <button type="submit" class="icon-btn danger"><i class="ti ti-trash"></i></button>
+          </form>
+        </div>
+      </div>
+      <p style="font-size:12px;color:#555;margin:0">{{ r.comment }}</p>
+      {% if r.reply %}
+      <div style="background:#f0f6ff;border-radius:6px;padding:8px 10px;margin-top:8px;font-size:12px;color:#333">
+        <strong>Balasan seller:</strong> {{ r.reply.message }}
+      </div>
+      {% endif %}
+    </div>
+    {% empty %}
+    <p class="text-muted small">Belum ada review produk.</p>
+    {% endfor %}
+  </div>
+
+  <!-- General reviews -->
+  <div class="tab-pane fade" id="tab-general">
+    {% for r in general_reviews %}
+    <div class="review-card">
+      <div class="d-flex justify-content-between align-items-start mb-1">
+        <div>
+          <strong style="font-size:13px">{{ r.name }}</strong>
+          {% if r.email %}<span style="font-size:11px;color:#aaa"> · {{ r.email }}</span>{% endif %}
+          <div class="stars">{% for i in "12345" %}{% if forloop.counter <= r.rating %}★{% else %}☆{% endif %}{% endfor %}</div>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+          <small class="text-muted">{{ r.created_at|date:"d M Y" }}</small>
+          {% if r.is_visible %}<span class="badge-status badge-active">Visible</span>
+          {% else %}<span class="badge-status badge-neutral">Hidden</span>{% endif %}
+          <form method="post" action="{% url 'admin_review_toggle' r.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="icon-btn" title="Toggle visibility"><i class="ti ti-eye"></i></button>
+          </form>
+          <form method="post" action="{% url 'admin_review_delete' r.pk %}" onsubmit="return confirmDelete(event, 'Review dari {{ r.name|escapejs }}')">
+            {% csrf_token %}
+            <button type="submit" class="icon-btn danger" title="Hapus"><i class="ti ti-trash"></i></button>
+          </form>
+        </div>
+      </div>
+      <p style="font-size:12px;color:#555;margin:0">{{ r.message }}</p>
+    </div>
+    {% empty %}
+    <p class="text-muted small">Belum ada review umum.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

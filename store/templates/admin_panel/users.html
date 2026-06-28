@@ -1,0 +1,36 @@
+{% extends "admin_panel/base.html" %}
+{% block title %}User{% endblock %}
+{% block page_title %}User{% endblock %}
+{% block content %}
+<div class="admin-table">
+  <table class="table table-hover mb-0">
+    <thead>
+      <tr><th>Username</th><th>Email</th><th>Nama lengkap</th><th>Bergabung</th><th>Staff</th><th>Profile</th><th>Aksi</th></tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>{{ u.username }}</td>
+        <td>{{ u.email }}</td>
+        <td>{{ u.get_full_name|default:"—" }}</td>
+        <td>{{ u.date_joined|date:"d M Y" }}</td>
+        <td>{% if u.is_staff %}<span class="badge-status badge-active">Ya</span>{% else %}<span class="badge-status badge-neutral">Tidak</span>{% endif %}</td>
+        <td>{% if u.user_profile %}<span class="badge-status badge-active">Ada</span>{% else %}<span class="badge-status badge-neutral">Kosong</span>{% endif %}</td>
+        <td>
+          {% if u.pk != request.user.pk %}
+          <form method="post" action="{% url 'admin_user_delete' u.pk %}" onsubmit="return confirmDelete(event, '{{ u.username|escapejs }}')">
+            {% csrf_token %}
+            <button type="submit" class="icon-btn danger" title="Hapus"><i class="ti ti-trash"></i></button>
+          </form>
+          {% else %}
+          <span class="badge-status badge-neutral" title="Tidak bisa menghapus akun sendiri">Anda</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="text-center text-muted py-4">Tidak ada user.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

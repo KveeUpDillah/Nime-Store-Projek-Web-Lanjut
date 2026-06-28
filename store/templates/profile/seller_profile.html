@@ -1,0 +1,58 @@
+{% extends 'layouts/index.html' %}
+{% block content %}
+
+<section class="container py-5">
+
+  <div class="card shadow-sm p-4 mb-5">
+    <div class="d-flex align-items-center gap-4">
+
+      {% if seller.photo %}
+        <img src="{{ seller.photo.url }}"
+             alt="Foto Seller"
+             style="width:130px; height:130px; object-fit:cover; border-radius:20px;">
+      {% else %}
+        <div style="width:130px; height:130px; border-radius:20px; background:#eee; display:flex; align-items:center; justify-content:center; font-size:45px;">
+          <i class="bi bi-shop"></i>
+        </div>
+      {% endif %}
+
+      <div>
+        <h1 class="fw-bold">{{ seller.shop_name }}</h1>
+        <p class="text-muted mb-1">Seller: {{ seller.user.username }}</p>
+        <p>{{ seller.bio|default:"Belum ada bio toko." }}</p>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="fw-bold mb-4">Katalog {{ seller.shop_name }}</h2>
+
+  <div class="row">
+    {% for product in products %}
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+
+          {% if product.image %}
+            <img src="{{ product.image.url }}"
+                 class="card-img-top"
+                 style="height:220px; object-fit:cover;">
+          {% endif %}
+
+          <div class="card-body">
+            <h5 class="fw-bold">{{ product.name }}</h5>
+            <p class="text-muted">{{ product.description|truncatewords:15 }}</p>
+            <p class="fw-bold">Rp {{ product.price }}</p>
+
+            <a href="{% url 'product_detail' product.id %}" class="btn btn-dark">
+              Lihat Produk
+            </a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p>Seller ini belum memiliki produk.</p>
+    {% endfor %}
+  </div>
+
+</section>
+
+{% endblock content %}

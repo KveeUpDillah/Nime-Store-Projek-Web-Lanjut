@@ -1,0 +1,45 @@
+{% extends "admin_panel/base.html" %}
+{% block title %}Order{% endblock %}
+{% block page_title %}Order{% endblock %}
+{% block content %}
+<div class="admin-table">
+  <table class="table table-hover mb-0">
+    <thead>
+      <tr><th>Order #</th><th>User</th><th>Total</th><th>Tanggal</th><th>Status checkout</th><th>Aksi</th></tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+      <tr>
+        <td>#{{ order.id }}</td>
+        <td>{{ order.user.username }}</td>
+        <td>Rp {{ order.formatted_total_price }}</td>
+        <td>{{ order.created_at|date:"d M Y, H:i" }}</td>
+        <td>
+          {% if order.checkout %}
+            {% with s=order.checkout.status %}
+            {% if s == 'waiting_payment' %}<span class="badge-status badge-inactive">Waiting payment</span>
+            {% elif s == 'processing' %}<span class="badge-status badge-info">Diproses</span>
+            {% elif s == 'shipped' %}<span class="badge-status badge-info">Dikirim</span>
+            {% elif s == 'delivered' %}<span class="badge-status badge-active">Diterima</span>
+            {% elif s == 'cancelled' %}<span class="badge-status badge-danger">Dibatalkan</span>
+            {% endif %}
+            {% endwith %}
+          {% else %}<span class="badge-status badge-neutral">—</span>{% endif %}
+        </td>
+        <td>
+          <div class="d-flex gap-1">
+            <a href="{% url 'admin_order_detail' order.pk %}" class="icon-btn" title="Detail"><i class="ti ti-eye"></i></a>
+            <form method="post" action="{% url 'admin_order_delete' order.pk %}" onsubmit="return confirmDelete(event, 'Order #{{ order.id }}')">
+              {% csrf_token %}
+              <button type="submit" class="icon-btn danger" title="Hapus"><i class="ti ti-trash"></i></button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="text-center text-muted py-4">Tidak ada order.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

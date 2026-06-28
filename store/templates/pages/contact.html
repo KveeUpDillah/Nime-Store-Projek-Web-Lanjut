@@ -1,0 +1,45 @@
+{% extends 'layouts/index.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/pages/contact.css' %}">
+
+<div class="contact-hero">
+  <div class="contact-hero-text">
+    <h1>Contact Us</h1>
+    <p>We would love to hear you :3</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row contact-info">
+    <div class="col-md-4 mb-3">
+      <h6>EMAIL</h6>
+      <p>sixseven@gmai.com</p>
+    </div>
+    <div class="col-md-4 mb-3 text-md-center">
+      <h6>Jam Operasional</h6>
+      <p>07.00 - 16.00 WITA</p>
+    </div>
+    <div class="col-md-4 mb-3 text-md-end">
+      <h6>Layanan Operasi</h6>
+      <p>0898675467</p>
+    </div>
+  </div>
+
+  <div class="row contact-extra">
+    <div class="col-md-4 mb-4">
+      <h6>Here text</h6>
+      <p>Writing for websites is both simple and complex. On the one hand, all you need to do is say what you mean and in your words.</p>
+    </div>
+    <div class="col-md-4 mb-4">
+      <h6>There text</h6>
+      <p>Are you thinking of keywords you should rank for? Are you including links in your text to additional information?</p>
+    </div>
+    <div class="col-md-4 mb-4">
+      <h6>Everywhere text</h6>
+      <p>There's a theory that people read in an F-shaped pattern, and that this should influence how you structure content on your website.</p>
+    </div>
+  </div>
+</div>
+{% endblock content %}

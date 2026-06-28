@@ -1,0 +1,46 @@
+{% extends 'layouts/index.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/pages/support.css' %}">
+
+<section class="support-section">
+
+  <h1 class="support-title">Support & Review</h1>
+  <p class="support-subtitle">
+    Berikan review kamu tentang pengalaman menggunakan NimeStore.
+  </p>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert-success">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="review-form-box">
+    <form method="POST">
+      {% csrf_token %}
+
+      <label class="form-label">Nama</label>
+      {{ form.name }}
+
+      <label class="form-label">Email</label>
+      {{ form.email }}
+
+      <label class="form-label">Rating</label>
+      {{ form.rating }}
+
+      <label class="form-label">Review</label>
+      {{ form.message }}
+
+      <button type="submit" class="btn-submit-review">
+        Kirim Review
+      </button>
+    </form>
+  </div>
+
+</section>
+
+{% endblock content %}

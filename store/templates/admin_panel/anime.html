@@ -1,0 +1,33 @@
+{% extends "admin_panel/base.html" %}
+{% block title %}Anime{% endblock %}
+{% block page_title %}Anime{% endblock %}
+{% block content %}
+<div class="admin-table">
+  <table class="table table-hover mb-0">
+    <thead>
+      <tr><th>MAL ID</th><th>Judul</th><th>Gambar</th><th>Aksi</th></tr>
+    </thead>
+    <tbody>
+      {% for a in anime_list %}
+      <tr>
+        <td>{{ a.mal_id }}</td>
+        <td>{{ a.title }}</td>
+        <td>
+          {% if a.image_url %}
+          <img src="{{ a.image_url }}" alt="{{ a.title }}" style="height:40px;border-radius:4px;object-fit:cover">
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          <form method="post" action="{% url 'admin_anime_delete' a.pk %}" onsubmit="return confirmDelete(event, '{{ a.title|escapejs }}')">
+            {% csrf_token %}
+            <button type="submit" class="icon-btn danger"><i class="ti ti-trash"></i></button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="text-center text-muted py-4">Belum ada anime.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

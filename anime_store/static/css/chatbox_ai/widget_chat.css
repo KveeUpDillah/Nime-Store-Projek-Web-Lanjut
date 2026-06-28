@@ -1,0 +1,374 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #c7c7ea;
+  --surface: #ceceff;
+  --surface2: #cdcdf6;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --accent: #7c6ef7;
+  --accent-dim: rgba(124,110,247,0.15);
+  --accent-text: #a89bff;
+  --text: #e8e6f0;
+  --text-muted: #8a87a0;
+  --text-faint: #4d4a61;
+  --user-bubble: #2a2550;
+  --user-text: #040404;
+  --bot-bubble: #1a1a2e;
+  --danger: #f07a7a;
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+/* Subtle grid bg */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(227, 224, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(179, 178, 193, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Layout: chat mengisi penuh area di bawah navbar ── */
+
+.chat-wrapper {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 100%;
+  height: calc(100vh - 56px); /* 56px = tinggi navbar NimeStore */
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* store-label (logo 🎌 NIME STORE) tetap tampil sebagai sidebar kiri kecil */
+.store-label {
+  display: none; /* sudah ada navbar, tidak perlu duplikat */
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+#chat-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: var(--surface);
+}
+
+/* ── Header ── */
+#chat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 24px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.header-info { flex: 1; }
+.header-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.header-status {
+  font-size: 11px;
+  color: #6fcf97;
+  display: flex; align-items: center; gap: 4px;
+  margin-top: 2px;
+}
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #6fcf97;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+.header-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: var(--accent-dim);
+  color: var(--accent-text);
+  border: 1px solid rgba(124,110,247,0.3);
+  letter-spacing: 0.04em;
+}
+
+/* ── Messages — satu-satunya bagian yang flex-grow & scroll ── */
+#messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border2) transparent;
+}
+
+#messages::-webkit-scrollbar { width: 4px; }
+#messages::-webkit-scrollbar-track { background: transparent; }
+#messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+.msg { display: flex; flex-direction: column; max-width: 92%; }
+.msg.user { align-self: flex-end; align-items: flex-end; }
+.msg.bot  { align-self: flex-start; align-items: flex-start; }
+
+.bubble {
+  padding: 14px 22px;
+  border-radius: 14px;
+  font-size: 15.5px;
+  line-height: 1.65;
+  word-break: break-word;
+}
+
+.msg.user .bubble {
+  background: var(--user-bubble);
+  color: var(--user-text);
+  border: 1px solid rgba(124,110,247,0.25);
+  border-bottom-right-radius: 4px;
+}
+
+.msg.bot .bubble {
+  background: var(--bot-bubble);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+}
+
+.msg.bot .bubble.error {
+  color: var(--danger);
+  border-color: rgba(240,122,122,0.2);
+}
+
+/* Typing dots */
+.typing-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  margin: 0 2px;
+  animation: blink 1.2s infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: .2s; }
+.typing-dot:nth-child(3) { animation-delay: .4s; }
+@keyframes blink {
+  0%,80%,100% { opacity: .15; }
+  40%          { opacity: 1; }
+}
+
+/* ── Suggestions ── */
+#suggestions {
+  padding: 12px 24px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.suggestion-chip {
+  flex: 1 1 calc(50% - 5px);
+  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: 20px;
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: border-color .15s, color .15s, background .15s;
+  font-family: inherit;
+  text-align: center;
+}
+.suggestion-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent-text);
+  background: var(--accent-dim);
+}
+
+/* Divider */
+.divider { height: 1px; background: var(--border); flex-shrink: 0; }
+
+/* ── Input row ── */
+#input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 12px 24px;
+  background: var(--surface2);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+#user-input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13.5px;
+  padding: 9px 13px;
+  resize: none;
+  outline: none;
+  max-height: 100px;
+  line-height: 1.5;
+  transition: border-color .15s;
+}
+#user-input::placeholder { color: var(--text-faint); }
+#user-input:focus { border-color: var(--accent); }
+
+#send-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 15px;
+  transition: opacity .15s, transform .1s;
+}
+#send-btn:hover   { opacity: .85; }
+#send-btn:active  { transform: scale(.93); }
+#send-btn:disabled { opacity: .3; cursor: default; }
+
+/* ── Footer ── */
+#chat-footer {
+  padding: 8px 24px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-faint);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--surface2);
+}
+
+/* ── Product Cards ── */
+
+.product-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.product-card {
+  display: flex;
+  align-items: stretch;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition: border-color .15s, background .15s;
+}
+
+.product-card:hover {
+  border-color: var(--accent);
+  background: rgba(124,110,247,0.06);
+}
+
+.product-image {
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  object-position: center;
+  flex-shrink: 0;
+  display: block;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+}
+
+.product-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px 10px;
+  gap: 4px;
+}
+
+.product-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-price {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-text);
+  margin-top: 2px;
+}
+
+.product-btn {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--accent-text);
+  background: var(--accent-dim);
+  border: 1px solid rgba(124,110,247,0.3);
+  border-radius: 20px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+  align-self: flex-start;
+}
+
+.product-btn:hover {
+  background: rgba(124,110,247,0.28);
+  border-color: var(--accent);
+}

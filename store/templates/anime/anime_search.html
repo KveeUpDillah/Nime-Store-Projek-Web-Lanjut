@@ -1,0 +1,70 @@
+{% extends 'layouts/index.html' %}
+{% block content %}
+
+<section class="container py-5">
+  <h1 class="fw-bold mb-3">Cari Anime dari API</h1>
+  <p class="text-muted">
+    Cari anime, lalu simpan agar bisa dipilih saat seller menambahkan produk.
+  </p>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="GET" action="{% url 'anime_search_api' %}" class="mb-4">
+    <div class="input-group">
+      <input type="text"
+             name="q"
+             class="form-control"
+             placeholder="Cari anime, contoh: Naruto, One Piece, Jujutsu Kaisen"
+             value="{{ query }}">
+
+      <button type="submit" class="btn btn-dark">
+        Cari Anime
+      </button>
+    </div>
+  </form>
+
+  <div class="row">
+    {% for anime in anime_results %}
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+
+          {% if anime.images.jpg.image_url %}
+            <img src="{{ anime.images.jpg.image_url }}"
+                 class="card-img-top"
+                 style="height:300px; object-fit:cover;">
+          {% endif %}
+
+          <div class="card-body">
+            <h5 class="fw-bold">{{ anime.title }}</h5>
+            <p class="text-muted">
+              {{ anime.synopsis|truncatewords:20 }}
+            </p>
+
+            <form method="POST" action="{% url 'anime_save' %}">
+              {% csrf_token %}
+
+              <input type="hidden" name="mal_id" value="{{ anime.mal_id }}">
+              <input type="hidden" name="title" value="{{ anime.title }}">
+              <input type="hidden" name="image_url" value="{{ anime.images.jpg.image_url }}">
+              <input type="hidden" name="synopsis" value="{{ anime.synopsis }}">
+
+              <button type="submit" class="btn btn-dark">
+                Simpan Anime
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      {% if query %}
+        <p class="text-muted">Anime tidak ditemukan.</p>
+      {% endif %}
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock content %}

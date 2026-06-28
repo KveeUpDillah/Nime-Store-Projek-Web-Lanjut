@@ -1,0 +1,37 @@
+{% extends "admin_panel/base.html" %}
+{% block title %}Kategori{% endblock %}
+{% block page_title %}Kategori{% endblock %}
+{% block content %}
+<div class="filter-bar">
+  <a href="{% url 'admin_category_create' %}" class="btn btn-sm btn-primary">
+    <i class="ti ti-plus"></i> Tambah kategori
+  </a>
+</div>
+<div class="admin-table">
+  <table class="table table-hover mb-0">
+    <thead>
+      <tr><th>#</th><th>Nama kategori</th><th>Jumlah produk</th><th>Aksi</th></tr>
+    </thead>
+    <tbody>
+      {% for cat in categories %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ cat.name }}</td>
+        <td>{{ cat.product_count }}</td>
+        <td>
+          <div class="d-flex gap-1">
+            <a href="{% url 'admin_category_edit' cat.pk %}" class="icon-btn" title="Edit"><i class="ti ti-edit"></i></a>
+            <form method="post" action="{% url 'admin_category_delete' cat.pk %}" onsubmit="return confirmDelete(event, '{{ cat.name|escapejs }}')">
+              {% csrf_token %}
+              <button type="submit" class="icon-btn danger" title="Hapus"><i class="ti ti-trash"></i></button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="text-center text-muted py-4">Belum ada kategori.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
