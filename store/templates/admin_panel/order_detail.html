@@ -1,0 +1,61 @@
+{% extends "admin_panel/base.html" %}
+{% block title %}Detail Order #{{ order.id }}{% endblock %}
+{% block page_title %}Detail Order #{{ order.id }}{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-12 col-md-6">
+    <div class="panel-card">
+      <div class="panel-title">Informasi order</div>
+      <table class="table table-sm mb-0" style="font-size:13px">
+        <tr><td class="text-muted" style="width:40%">Order ID</td><td>#{{ order.id }}</td></tr>
+        <tr><td class="text-muted">User</td><td>{{ order.user.username }}</td></tr>
+        <tr><td class="text-muted">Total</td><td>Rp {{ order.formatted_total_price }}</td></tr>
+        <tr><td class="text-muted">Tanggal</td><td>{{ order.created_at|date:"d M Y, H:i" }}</td></tr>
+      </table>
+    </div>
+  </div>
+
+  {% if order.checkout %}
+  <div class="col-12 col-md-6">
+    <div class="panel-card">
+      <div class="panel-title">Pengiriman</div>
+      <table class="table table-sm mb-0" style="font-size:13px">
+        <tr><td class="text-muted" style="width:40%">Penerima</td><td>{{ order.checkout.recipient_name }}</td></tr>
+        <tr><td class="text-muted">No. HP</td><td>{{ order.checkout.phone_number }}</td></tr>
+        <tr><td class="text-muted">Alamat</td><td>{{ order.checkout.address }}</td></tr>
+        <tr><td class="text-muted">Kota</td><td>{{ order.checkout.city }}, {{ order.checkout.province }} {{ order.checkout.postal_code }}</td></tr>
+        <tr><td class="text-muted">Status</td><td>{{ order.checkout.get_status_display }}</td></tr>
+        {% if order.checkout.notes %}
+        <tr><td class="text-muted">Catatan</td><td>{{ order.checkout.notes }}</td></tr>
+        {% endif %}
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="col-12">
+    <div class="panel-card">
+      <div class="panel-title">Item order</div>
+      <div class="admin-table">
+        <table class="table mb-0" style="font-size:13px">
+          <thead><tr><th>Produk</th><th>Harga satuan</th><th>Qty</th><th>Subtotal</th></tr></thead>
+          <tbody>
+            {% for item in order.items.all %}
+            <tr>
+              <td>{{ item.product.name }}</td>
+              <td>Rp {{ item.product.formatted_price }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>Rp {{ item.formatted_subtotal }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mt-3">
+  <a href="{% url 'admin_orders' %}" class="btn btn-sm btn-light">← Kembali ke daftar order</a>
+</div>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends "admin_panel/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Stat cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="stat-card">
+      <div class="stat-label">Total produk</div>
+      <div class="stat-value">{{ total_products }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="stat-card">
+      <div class="stat-label">Total order</div>
+      <div class="stat-value">{{ total_orders }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="stat-card">
+      <div class="stat-label">Pendapatan bulan ini</div>
+      <div class="stat-value" style="font-size:16px">Rp {{ monthly_revenue|floatformat:0 }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="stat-card">
+      <div class="stat-label">User terdaftar</div>
+      <div class="stat-value">{{ total_users }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="stat-card">
+      <div class="stat-label">Payment pending</div>
+      <div class="stat-value" style="color:#ca8a04">{{ pending_payments }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="stat-card">
+      <div class="stat-label">Review baru</div>
+      <div class="stat-value">{{ new_reviews }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <!-- Recent orders -->
+  <div class="col-12 col-lg-6">
+    <div class="panel-card h-100">
+      <div class="panel-title">Order terbaru</div>
+      {% for order in recent_orders %}
+      <div class="activity-row">
+        <div class="activity-dot" style="background:{% if order.checkout.status == 'delivered' %}#16a34a{% elif order.checkout.status == 'cancelled' %}#dc2626{% else %}#2563eb{% endif %}"></div>
+        <div>
+          <div>Order #{{ order.id }} — {{ order.user.username }} — Rp {{ order.formatted_total_price }}</div>
+          <div class="activity-time">{{ order.created_at|timesince }} lalu</div>
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-muted small">Belum ada order.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Checkout status breakdown -->
+  <div class="col-12 col-lg-6">
+    <div class="panel-card h-100">
+      <div class="panel-title">Status checkout (bulan ini)</div>
+      {% for stat in checkout_stats %}
+      <div class="progress-bar-row">
+        <span class="key">{{ stat.status }}</span>
+        <div class="bar-bg">
+          <div class="bar-fill" style="width:{{ stat.count|floatformat:0 }}%;background:#2563eb"></div>
+        </div>
+        <span class="val">{{ stat.count }}</span>
+      </div>
+      {% empty %}
+      <p class="text-muted small">Tidak ada data.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Chart -->
+<div class="panel-card">
+  <div class="panel-title mb-3">Order per bulan (6 bulan terakhir)</div>
+  <div class="chart-bars">
+    {% for m in months %}
+    {% widthratio m.count max_count 100 as bar_height %}
+    <div class="chart-bar"
+         style="height:{{ bar_height }}%"
+         title="{{ m.label }}: {{ m.count }} order"></div>
+    {% endfor %}
+  </div>
+  <div class="chart-labels">
+    {% for m in months %}<span>{{ m.label }}</span>{% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "admin_panel/base.html" %}
+{% block title %}Pembayaran{% endblock %}
+{% block page_title %}Pembayaran{% endblock %}
+{% block content %}
+<div class="filter-bar">
+  <form method="get" class="d-flex gap-2">
+    <select name="status" class="form-select form-select-sm" style="width:auto">
+      <option value="">Semua status</option>
+      {% for val, label in statuses %}
+      <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-sm btn-outline-secondary">Filter</button>
+    <a href="{% url 'admin_payments' %}" class="btn btn-sm btn-light">Reset</a>
+  </form>
+</div>
+<div class="admin-table">
+  <table class="table table-hover mb-0">
+    <thead>
+      <tr><th>Reference ID</th><th>Nominal</th><th>Status</th><th>Expired at</th><th>Paid at</th><th>Dibuat</th><th>Aksi</th></tr>
+    </thead>
+    <tbody>
+      {% for p in payments %}
+      <tr>
+        <td style="font-family:monospace;font-size:11px">{{ p.reference_id }}</td>
+        <td>Rp {{ p.formatted_amount }}</td>
+        <td>
+          {% if p.status == 'paid' %}<span class="badge-status badge-active">Paid</span>
+          {% elif p.status == 'pending' %}<span class="badge-status badge-inactive">Pending</span>
+          {% elif p.status == 'expired' %}<span class="badge-status badge-danger">Expired</span>
+          {% else %}<span class="badge-status badge-neutral">{{ p.get_status_display }}</span>{% endif %}
+        </td>
+        <td>{{ p.expired_at|date:"d M Y, H:i"|default:"—" }}</td>
+        <td>{{ p.paid_at|date:"d M Y, H:i"|default:"—" }}</td>
+        <td>{{ p.created_at|date:"d M Y" }}</td>
+        <td>
+          <form method="post" action="{% url 'admin_payment_delete' p.pk %}" onsubmit="return confirmDelete(event, 'Payment {{ p.reference_id|escapejs }}')">
+            {% csrf_token %}
+            <button type="submit" class="icon-btn danger" title="Hapus"><i class="ti ti-trash"></i></button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="text-center text-muted py-4">Tidak ada data pembayaran.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

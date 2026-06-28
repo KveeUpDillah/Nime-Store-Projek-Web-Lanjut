@@ -19,53 +19,247 @@
     {% endfor %}
   {% endif %}
 
-  <div class="table-responsive">
-    <table class="table table-bordered align-middle">
-      <thead>
-        <tr>
-          <th>Produk</th>
-          <th>Kategori</th>
-          <th>Harga</th>
-          <th>Stok</th>
-          <th>Status</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs mb-4" id="dashboardTab" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="produk-tab" data-bs-toggle="tab"
+              data-bs-target="#produk-pane" type="button" role="tab"
+              aria-controls="produk-pane" aria-selected="true">
+        Produk
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="pesanan-tab" data-bs-toggle="tab"
+              data-bs-target="#pesanan-pane" type="button" role="tab"
+              aria-controls="pesanan-pane" aria-selected="false">
+        Pesanan
+        {% if seller_orders %}
+          <span class="badge bg-danger ms-1">{{ seller_orders|length }}</span>
+        {% endif %}
+      </button>
+    </li>
+  </ul>
 
-      <tbody>
-        {% for product in products %}
-          <tr>
-            <td>{{ product.name }}</td>
-            <td>{{ product.category|default:"-" }}</td>
-            <td>Rp {{ product.price }}</td>
-            <td>{{ product.stock }}</td>
-            <td>
-              {% if product.is_active %}
-                Aktif
-              {% else %}
-                Nonaktif
-              {% endif %}
-            </td>
-            <td>
-              <a href="{% url 'product_update' product.id %}" class="btn btn-sm btn-warning">
-                Edit
-              </a>
+  <div class="tab-content" id="dashboardTabContent">
 
-              <a href="{% url 'product_delete' product.id %}" class="btn btn-sm btn-danger">
-                Hapus
-              </a>
-            </td>
-          </tr>
-        {% empty %}
-          <tr>
-            <td colspan="6" class="text-center">
-              Belum ada produk.
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <!-- ===================== TAB PRODUK ===================== -->
+    <div class="tab-pane fade show active" id="produk-pane" role="tabpanel" aria-labelledby="produk-tab">
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+          <thead>
+            <tr>
+              <th>Produk</th>
+              <th>Kategori</th>
+              <th>Harga</th>
+              <th>Stok</th>
+              <th>Status</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for product in products %}
+              <tr>
+                <td>{{ product.name }}</td>
+                <td>{{ product.category|default:"-" }}</td>
+                <td>Rp {{ product.formatted_price }}</td>
+                <td>{{ product.stock }}</td>
+                <td>
+                  {% if product.is_active %}
+                    Aktif
+                  {% else %}
+                    Nonaktif
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="{% url 'product_update' product.id %}" class="btn btn-sm btn-warning">
+                    Edit
+                  </a>
+
+                  <a href="{% url 'product_delete' product.id %}" class="btn btn-sm btn-danger">
+                    Hapus
+                  </a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="6" class="text-center">
+                  Belum ada produk.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===================== TAB PESANAN ===================== -->
+    <div class="tab-pane fade" id="pesanan-pane" role="tabpanel" aria-labelledby="pesanan-tab">
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+          <thead>
+            <tr>
+              <th>Order</th>
+              <th>Pembeli</th>
+              <th>Produk Dipesan</th>
+              <th>Total</th>
+              <th>Tanggal</th>
+              <th>Status</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for entry in seller_orders %}
+              {% with checkout=entry.checkout %}
+              <tr>
+                <td>#{{ checkout.order.id }}</td>
+                <td>{{ checkout.user.username }}</td>
+                <td>
+                  <ul class="mb-0 ps-3">
+                    {% for item in entry.items %}
+                      <li>{{ item.product.name }} x {{ item.quantity }}</li>
+                    {% endfor %}
+                  </ul>
+                </td>
+                <td>Rp {{ checkout.order.formatted_total_price }}</td>
+                <td>{{ checkout.created_at|date:"d M Y" }}</td>
+                <td>
+                  <span class="badge
+                    {% if checkout.status == 'waiting_payment' %}bg-warning text-dark
+                    {% elif checkout.status == 'processing' %}bg-info text-dark
+                    {% elif checkout.status == 'shipped' %}bg-primary
+                    {% elif checkout.status == 'delivered' %}bg-success
+                    {% else %}bg-secondary{% endif %}">
+                    {{ checkout.get_status_display }}
+                  </span>
+                </td>
+                <td>
+                  {% if checkout.status == 'waiting_payment' %}
+                    <form method="POST"
+                          action="{% url 'confirm_payment' checkout.id %}"
+                          class="confirm-form">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-success" style="font-size:.75rem; padding:.25rem .6rem; border-radius:.375rem;">
+                        Konfirmasi Pembayaran
+                      </button>
+                    </form>
+                  {% elif checkout.status == 'processing' %}
+                    <button type="button"
+                            class="btn btn-secondary btn-cetak-struk" style="font-size:.75rem; padding:.25rem .6rem; border-radius:.375rem;"
+                            data-order-id="{{ checkout.order.id }}"
+                            data-buyer="{{ checkout.user.username }}"
+                            data-total="{{ checkout.order.formatted_total_price }}"
+                            data-date="{{ checkout.created_at|date:'d M Y' }}">
+                      🧾 Cetak Struk
+                    </button>
+                  {% else %}
+                    <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endwith %}
+            {% empty %}
+              <tr>
+                <td colspan="7" class="text-center">
+                  Belum ada pesanan masuk.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 </section>
+
+<!-- ===================== MODAL RESI ===================== -->
+<div class="modal fade" id="resiModal" tabindex="-1" aria-labelledby="resiModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
+    <div class="modal-content border-0" style="background:#1e2235; color:#e0e6f0; border-radius:14px; overflow:hidden;">
+
+      <div class="modal-header border-0 pb-1" style="background:#1e2235;">
+        <h6 class="modal-title fw-semibold" id="resiModalLabel" style="color:#a0b0cc; letter-spacing:.5px; font-size:.85rem;">NOMOR RESI PENGIRIMAN</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+
+      <div class="modal-body text-center pt-2 pb-4">
+        <!-- Resi box -->
+        <div class="mx-auto my-3 p-4 d-flex flex-column align-items-center justify-content-center"
+             style="background:#12162a; border-radius:12px; border:1px dashed #3a4a70;">
+          <p class="mb-1" style="font-size:.72rem; color:#6a7a99; letter-spacing:2px; text-transform:uppercase;">Kode Resi</p>
+          <p id="resiNumber" class="mb-0 fw-bold font-monospace"
+             style="font-size:1.6rem; letter-spacing:3px; color:#e0e6f0;"></p>
+          <button onclick="copyResi()" class="btn btn-sm mt-3"
+                  style="background:#2b3a5e; color:#7ab3ff; border:none; font-size:.78rem; border-radius:6px;">
+            📋 Salin Resi
+          </button>
+        </div>
+        <p class="mt-2 mb-0" style="font-size:.78rem; color:#6a7a99;">
+          Tuliskan kode resi ini secara manual pada paket sebelum diserahkan ke ekspedisi.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+// ── Generate resi random: format CM2 XXX XXX XXX X ──────────────────────────
+function generateResi() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const seg = (n) => Array.from({length: n}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    return `CM2 ${seg(3)} ${seg(3)} ${seg(3)} ${seg(1)}`;
+}
+
+// ── Salin resi ke clipboard ──────────────────────────────────────────────────
+function copyResi() {
+    const resi = document.getElementById('resiNumber').textContent;
+    navigator.clipboard.writeText(resi).then(() => {
+        Swal.fire({ icon: 'success', title: 'Tersalin!', text: resi, timer: 1500, showConfirmButton: false });
+    });
+}
+
+// ── Tampilkan modal resi ─────────────────────────────────────────────────────
+function showResiModal(resi) {
+    document.getElementById('resiNumber').textContent = resi;
+    new bootstrap.Modal(document.getElementById('resiModal')).show();
+}
+
+
+
+// ── Konfirmasi pembayaran (tanpa resi) ───────────────────────────────────────
+document.querySelectorAll('.confirm-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        Swal.fire({
+            title: 'Konfirmasi Pembayaran?',
+            text: 'Pastikan dana sudah benar-benar masuk sebelum mengonfirmasi pesanan ini.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#198754',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, Konfirmasi',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) form.submit();
+        });
+    });
+});
+
+// ── Cetak struk (modal informatif, sebelum konfirmasi) ───────────────────────
+document.querySelectorAll('.btn-cetak-struk').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const resi = generateResi();
+        showResiModal(resi);
+    });
+});
+
+
+</script>
 
 {% endblock content %}

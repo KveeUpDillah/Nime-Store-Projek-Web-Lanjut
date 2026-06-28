@@ -1,4 +1,6 @@
 {% extends 'layouts/index.html' %}
+{% load static %}
+
 
 {% block content %}
 <style>
@@ -73,6 +75,37 @@ body{
     margin-bottom:15px;
 }
 
+.btn-google{
+    margin-top:20px;
+    width:100%;
+    height:55px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+
+    text-decoration:none;
+    color:#444;
+    background:#fff;
+    border:1px solid #ddd;
+    border-radius:10px;
+
+    font-size:16px;
+    font-weight:bold;
+
+    transition:.3s;
+}
+
+.btn-google:hover{
+    background:#f5f5f5;
+    border-color:#bbb;
+}
+
+.btn-google img{
+    width:22px;
+    height:22px;
+}
+
 /* Right image */
 .right{
     width:55%;
@@ -141,10 +174,15 @@ body{
                 </a>
             </div>
         </form>
+        <a href="{% url 'google_login' %}" class="btn-google">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                alt="Google Logo">
+            <span>Login dengan Google</span>
+        </a>
     </div>
 
     <div class="right">
-        <img src="https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?w=1200"
+        <img src="{% static 'images/white2.jpg' %}"
              alt="Login Image">
     </div>
 

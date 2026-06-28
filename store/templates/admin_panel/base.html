@@ -1,0 +1,86 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Admin Panel{% endblock %} — Nime-Store</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/admin_panel/style.css' %}">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="ti ti-building-store"></i></div>
+    <span class="logo-text">Nime-Store</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Utama</div>
+    <a href="{% url 'admin_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+      <i class="ti ti-layout-dashboard"></i><span class="nav-label">Dashboard</span>
+    </a>
+
+    <div class="nav-section">Katalog</div>
+    <a href="{% url 'admin_products' %}" class="nav-link {% if 'product' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="ti ti-package"></i><span class="nav-label">Produk</span>
+    </a>
+    <a href="{% url 'admin_categories' %}" class="nav-link {% if 'categor' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="ti ti-tags"></i><span class="nav-label">Kategori</span>
+    </a>
+    <a href="{% url 'admin_anime' %}" class="nav-link {% if 'anime' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="ti ti-movie"></i><span class="nav-label">Anime</span>
+    </a>
+
+    <div class="nav-section">Transaksi</div>
+    <a href="{% url 'admin_orders' %}" class="nav-link {% if 'order' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="ti ti-shopping-bag"></i><span class="nav-label">Order</span>
+    </a>
+    <a href="{% url 'admin_checkouts' %}" class="nav-link {% if 'checkout' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="ti ti-truck-delivery"></i><span class="nav-label">Checkout</span>
+    </a>
+    <a href="{% url 'admin_payments' %}" class="nav-link {% if 'payment' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="ti ti-credit-card"></i><span class="nav-label">Pembayaran</span>
+    </a>
+
+    <div class="nav-section">Pengguna</div>
+    <a href="{% url 'admin_users' %}" class="nav-link {% if 'user' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="ti ti-users"></i><span class="nav-label">User</span>
+    </a>
+    <a href="{% url 'admin_sellers' %}" class="nav-link {% if 'seller' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="ti ti-building-store"></i><span class="nav-label">Seller</span>
+    </a>
+
+    <div class="nav-section">Ulasan</div>
+    <a href="{% url 'admin_reviews' %}" class="nav-link {% if 'review' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="ti ti-star"></i><span class="nav-label">Review</span>
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="sidebar-toggle" onclick="toggleSidebar()" id="toggle-btn">
+      <i class="ti ti-layout-sidebar-left-collapse" id="toggle-icon"></i>
+    </button>
+  </div>
+</div>
+
+<div class="main-wrap" id="main-wrap">
+  <div class="topbar">
+    <span class="topbar-title">{% block page_title %}Dashboard{% endblock %}</span>
+    <button class="btn btn-sm btn-light border" style="padding:4px 8px">
+      <i class="ti ti-bell" style="font-size:16px"></i>
+    </button>
+    <a href="{% url 'admin:index' %}" class="avatar-btn" title="Django Admin">A</a>
+  </div>
+
+  <div class="content">
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/admin_panel/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

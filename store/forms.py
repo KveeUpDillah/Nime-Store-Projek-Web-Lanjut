@@ -1,5 +1,5 @@
 from django import forms
-from .models import Review, SellerProfile, Product, ProductReview, UserProfile
+from .models import Review, SellerProfile, Product, ProductReview, UserProfile, ReviewReply
 
 
 class ReviewForm(forms.ModelForm):
@@ -152,4 +152,17 @@ class SellerProfileEditForm(forms.ModelForm):
                 'placeholder': 'Deskripsi toko kamu...',
                 'rows': 4
             }),
+        }
+
+class ReplyForm(forms.ModelForm):
+    class Meta:
+        model = ReviewReply
+        fields = ["message"]
+
+        widgets = {
+            "message": forms.Textarea(attrs={
+                "class": "form-control",
+                "rows": 3,
+                "placeholder": "Tulis balasan..."
+            })
         }

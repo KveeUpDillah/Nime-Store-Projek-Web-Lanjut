@@ -1,0 +1,63 @@
+{% extends 'layouts/index.html' %}
+{% load static %}
+
+{% block extrahead %}
+<link rel="stylesheet" href="{% static 'css/chatbox_ai/widget_chat.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="chat-wrapper">
+<div id="widget">
+  <div class="store-label">
+    <div class="store-logo">🎌</div>
+    <span class="store-name">Nime Store</span>
+  </div>
+
+  <div id="chat-card">
+    <div id="chat-header">
+      <div class="avatar">
+        <img src="{% static 'images/ai_avatar/meow.jpg' %}" alt="AI Avatar">
+      </div>
+      <div class="header-info">
+        <div class="header-name">Nime AI</div>
+        <div class="header-status">
+          <span class="status-dot"></span>
+          Online sekarang
+        </div>
+      </div>
+      <div class="header-badge">BRONZE</div>
+    </div>
+
+    <div id="messages">
+      <div class="msg bot">
+        <div class="bubble">
+          Halo! Saya Nime AI ^-^, AI Assistant dari Nime Store. Saya siap membantu kamu seputar produk, pembelian, penjualan, atau fitur marketplace. Ada yang bisa dibantu? Nya~ :3
+        </div>
+      </div>
+    </div>
+
+    <div id="suggestions">
+      <button class="suggestion-chip" onclick="sendSuggestion(this)">Cara membeli produk?</button>
+      <button class="suggestion-chip" onclick="sendSuggestion(this)">Bagaimana cara jadi seller?</button>
+      <button class="suggestion-chip" onclick="sendSuggestion(this)">Status pesanan saya</button>
+      <button class="suggestion-chip" onclick="sendSuggestion(this)">Metode pembayaran</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div id="input-row">
+      <textarea id="user-input" placeholder="Tanyakan sesuatu..." rows="1"></textarea>
+      <button id="send-btn" onclick="send()" aria-label="Kirim">
+        ➤
+      </button>
+    </div>
+
+    <div id="chat-footer">
+      Dijawab oleh Nime AI · © 2026 Nime Store. Seluruh hak cipta dilindungi.
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="{% static 'js/chatbox_ai/widget_chat.js' %}" defer></script>
+{% endblock content %}
