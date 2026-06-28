@@ -9,7 +9,6 @@ from .general import (
 )
 
 from .auth_views import (
-    dashboard,
     become_seller,
 )
 

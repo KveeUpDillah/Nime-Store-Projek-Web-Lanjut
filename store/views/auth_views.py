@@ -13,11 +13,11 @@ def is_seller(user):
     return hasattr(user, 'seller_profile')
 
 
-@moderator_required
-@login_required
-@user_passes_test(is_moderator)
-def dashboard(request):
-    return render(request, 'admin/dashboard.html')
+# @moderator_required
+# @login_required
+# @user_passes_test(is_moderator)
+# def dashboard(request):
+#     return render(request, 'admin/dashboard.html')
 
 
 @customer_required

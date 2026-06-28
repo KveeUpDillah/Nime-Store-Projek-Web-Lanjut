@@ -1,7 +1,7 @@
-from django.urls import path
+from django.urls import path, include
 from django.contrib import admin
-from store import views
-from store import authentication
+from store import authentication, views
+from store.views import admin_views as v
 from store.authentication import login as auth_login_view
 from django.contrib.auth import views as auth_views
 from django.conf import settings
@@ -9,6 +9,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('', views.index, name='root'),
+    path('', include('store.admin_urls')),
     path('admin/', admin.site.urls),
 
     # Login/Logout 
@@ -18,7 +19,6 @@ urlpatterns = [
 
     path('index/', views.index, name='index'),
     path('home/', views.home, name='home'),
-    path('dashboard/', views.dashboard, name='dashboard'),
 
     path('contact/', views.contact, name='contact'),
     path('gallery/', views.gallery, name='gallery'),
