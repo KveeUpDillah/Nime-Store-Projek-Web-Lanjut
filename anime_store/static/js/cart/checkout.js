@@ -276,9 +276,9 @@ document.getElementById('placeOrderBtn').addEventListener('click', () => {
   formData.append('postal_code', document.getElementById('postalCode').value.trim());
   formData.append('notes', document.getElementById('notes').value.trim());
 
-  fetch("{% url 'place_order' %}", {
+fetch(PLACE_ORDER_URL, {
     method: 'POST',
-    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+    headers: { 'X-CSRFToken': CSRF_TOKEN },
     body: formData
 });
   qrisModal.show();
@@ -362,7 +362,7 @@ document.getElementById('simulatePaidBtn').addEventListener('click', () => {
     successModal.show();
     // Tambah redirect setelah modal muncul sebentar
     setTimeout(() => {
-        window.location.href = "{% url 'cust_orders' %}";  
+        window.location.href = CUST_ORDERS_URL;  
     }, 2000);
   }, 400);
 });
