@@ -32,7 +32,7 @@ def become_seller(request):
             seller = form.save(commit=False)
             seller.user = request.user
             seller.save()
-            seller_group = Group.objects.get(name='Seller')
+            seller_group, created = Group.objects.get_or_create(name='Seller')
             request.user.groups.add(seller_group)
             messages.success(request, 'Akun seller berhasil dibuat.')
             return redirect('seller_dashboard')

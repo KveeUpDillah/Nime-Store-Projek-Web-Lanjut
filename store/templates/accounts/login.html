@@ -1,4 +1,6 @@
 {% extends 'layouts/index.html' %}
+{% load static %}
+
 
 {% block content %}
 <style>
@@ -180,7 +182,7 @@ body{
     </div>
 
     <div class="right">
-        <img src="https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?w=1200"
+        <img src="{% static 'images/white2.jpg' %}"
              alt="Login Image">
     </div>
 
